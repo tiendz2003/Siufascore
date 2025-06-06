@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Siufascore</string>
+    <string name="news">Tin tức</string>
+    <string name="live_stream">Trực tiếp</string>
+    <string name="not_connected">Bạn chưa kết nối mạng.Vui lòng kiểm tra kết nối mạng</string>
+    <string name="home">Trang chủ</string>
+</resources>

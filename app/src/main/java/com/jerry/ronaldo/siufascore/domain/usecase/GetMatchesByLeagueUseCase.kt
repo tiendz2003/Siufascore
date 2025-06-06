@@ -1,0 +1,14 @@
+package com.jerry.ronaldo.siufascore.domain.usecase
+
+import com.jerry.ronaldo.siufascore.domain.model.Match
+import com.jerry.ronaldo.siufascore.domain.repository.MatchRepository
+import com.jerry.ronaldo.siufascore.utils.Resource
+import javax.inject.Inject
+
+class GetMatchesByLeagueUseCase @Inject constructor(
+    private val matchRepository:MatchRepository
+) {
+     suspend operator fun invoke(competitionId:String, matchDay:Int): Resource<List<Match>>{
+        return matchRepository.getMatchByLeague(competitionId,matchDay)
+    }
+}
