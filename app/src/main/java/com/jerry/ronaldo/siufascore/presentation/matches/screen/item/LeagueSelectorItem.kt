@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.jerry.ronaldo.siufascore.R
-import com.jerry.ronaldo.siufascore.presentation.matches.screen.CompetitionSelector
+import com.jerry.ronaldo.siufascore.presentation.matches.screen.home.CompetitionSelector
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple
 
 @Composable

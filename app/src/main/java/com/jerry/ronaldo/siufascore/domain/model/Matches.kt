@@ -40,7 +40,8 @@ data class Match(
     val awayTeam: Team,
     val score: Score,
     val area: Area,
-    val season: Season
+    val season: Season,
+    val competition: Competition,
 )
 
 data class Score(

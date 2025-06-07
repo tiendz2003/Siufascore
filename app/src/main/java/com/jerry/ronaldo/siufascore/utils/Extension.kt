@@ -14,16 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-fun String.formatTime(): String {
-    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
-    val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault()).apply {
-        timeZone = TimeZone.getDefault()
-    }
-    val date = inputFormat.parse(this) ?: return this
-    return outputFormat.format(date)
-}
+
 
 fun String.formatDisplayDate(): String {
     val inputFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())

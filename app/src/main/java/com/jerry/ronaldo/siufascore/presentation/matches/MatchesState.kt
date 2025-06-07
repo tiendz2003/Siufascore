@@ -12,7 +12,7 @@ data class MatchesState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val competitionId: String? = null,
-    val competionInfo:CompetitionLeague?= null,
+    val competionInfo: CompetitionLeague? = null,
     val currentMatchday: Int? = null,
     val standingItem: List<TeamStandingItem> = emptyList(),
     val liveMatches: List<Match> = emptyList(),
@@ -20,6 +20,7 @@ data class MatchesState(
 ) : ViewState
 
 sealed class MatchesIntent : Intent {
+    data class NavigateToDetailMatch(val matchId: Int) : MatchesIntent()
     data class LoadMatchesByLeague(val competitionId: String) : MatchesIntent()
     data class SetMatchday(val matchDay: Int) : MatchesIntent()
     data class SetCompetition(val competitionId: String) : MatchesIntent()
@@ -28,5 +29,5 @@ sealed class MatchesIntent : Intent {
 
 sealed class MatchesEffect : SingleEvent {
     data class ShowError(val error: String) : MatchesEffect()
-    data class NavigateToDetailMatch(val matchId: Long) : MatchesEffect()
+    data class NavigateToDetailMatch(val matchId: Int) : MatchesEffect()
 }

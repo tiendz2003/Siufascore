@@ -1,4 +1,4 @@
-package com.jerry.ronaldo.siufascore.presentation.matches.screen
+package com.jerry.ronaldo.siufascore.presentation.matches.screen.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

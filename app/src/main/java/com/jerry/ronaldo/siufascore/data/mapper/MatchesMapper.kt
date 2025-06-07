@@ -1,9 +1,9 @@
 package com.jerry.ronaldo.siufascore.data.mapper
 
 import com.jerry.ronaldo.siufascore.data.model.MatchesResponse
-import com.jerry.ronaldo.siufascore.data.model.MatchesResponse.CompetitionResponse
 import com.jerry.ronaldo.siufascore.data.model.MatchesResponse.MatcheResponse
 import com.jerry.ronaldo.siufascore.data.model.MatchesResponse.MatcheResponse.AreaResponse
+import com.jerry.ronaldo.siufascore.data.model.MatchesResponse.MatcheResponse.CompetitionResponse
 import com.jerry.ronaldo.siufascore.data.model.MatchesResponse.MatcheResponse.RefereeResponse
 import com.jerry.ronaldo.siufascore.data.model.MatchesResponse.MatcheResponse.ScoreResponse
 import com.jerry.ronaldo.siufascore.data.model.MatchesResponse.MatcheResponse.ScoreResponse.ExtraTimeResponse
@@ -124,7 +124,8 @@ fun MatcheResponse.toDomain(): Match {
         awayTeam = this.awayTeam.toDomain(),
         score = this.score.toDomain(),
         area = this.area.toDomain(),
-        season = this.season.toDomain()
+        season = this.season.toDomain(),
+        competition = this.competition.toDomain(),
     )
 }
 

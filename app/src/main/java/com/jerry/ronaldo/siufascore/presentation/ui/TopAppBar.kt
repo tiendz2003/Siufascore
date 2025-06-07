@@ -1,20 +1,25 @@
 package com.jerry.ronaldo.siufascore.presentation.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import com.jerry.ronaldo.siufascore.domain.model.Match
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,33 +35,66 @@ fun TopAppBar(
     onActionClick: () -> Unit = {},
 ) {
 
-        CenterAlignedTopAppBar(
-            title = {
-                Text(
-                    text = stringResource(id = titleRes),
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            },
-            navigationIcon ={
-                IconButton(
-                    onClick = onNavigationClick
-                ) {
-                    Icon(
-                        imageVector = navigationIcon,
-                        contentDescription = navigationIconContentDescription,
-                        tint = Color.White
-                    )
-                }
-            },
-            actions = {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(id = titleRes),
+                color = Color.White,
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = onNavigationClick
+            ) {
                 Icon(
-                    imageVector = actionIcon,
-                    contentDescription = actionIconContentDescription,
+                    imageVector = navigationIcon,
+                    contentDescription = navigationIconContentDescription,
                     tint = Color.White
                 )
-            },
-            colors = colors,
-            modifier = modifier.testTag("siufascoreTopAppbar")
-        )
+            }
+        },
+        actions = {
+            Icon(
+                imageVector = actionIcon,
+                contentDescription = actionIconContentDescription,
+                tint = Color.White
+            )
+        },
+        colors = colors,
+        modifier = modifier.testTag("siufascoreTopAppbar")
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DetailTopAppBar(
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit,
+    scrollBehavior : TopAppBarScrollBehavior,
+    match: Match
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = "${match.homeTeam.name} v ${match.awayTeam.name}",
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        modifier = modifier,
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Purple,
+            titleContentColor = Color.White,
+            navigationIconContentColor = Color.White,
+        ),
+        scrollBehavior = scrollBehavior
+    )
 }

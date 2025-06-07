@@ -1,9 +1,16 @@
-package com.jerry.ronaldo.siufascore.presentation.matches.screen
+package com.jerry.ronaldo.siufascore.presentation.matches.screen.home
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -22,36 +30,50 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.jerry.ronaldo.siufascore.R
 import com.jerry.ronaldo.siufascore.domain.model.Match
+import com.jerry.ronaldo.siufascore.presentation.matches.MatchesEffect
 import com.jerry.ronaldo.siufascore.presentation.matches.MatchesIntent
 import com.jerry.ronaldo.siufascore.presentation.matches.MatchesViewModel
 import com.jerry.ronaldo.siufascore.presentation.matches.screen.item.CompetitionSelectorItem
@@ -61,11 +83,15 @@ import com.jerry.ronaldo.siufascore.presentation.ui.Purple
 import com.jerry.ronaldo.siufascore.utils.MatchStatus
 import com.jerry.ronaldo.siufascore.utils.extractDateFromUtc
 import com.jerry.ronaldo.siufascore.utils.formatDisplayDate
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @Composable
-fun HomeScreen(onMatchClick: (String) -> Unit, viewmodel: MatchesViewModel = hiltViewModel()) {
+fun HomeScreen(
+    onMatchClick: (Int) -> Unit,
+    viewmodel: MatchesViewModel = hiltViewModel()
+) {
     val tabs = listOf("Lịch thi đấu", "Bảng xếp hạng")
     val pagerState = rememberPagerState { tabs.size }
     val coroutineScope = rememberCoroutineScope()
@@ -194,6 +220,16 @@ fun MatchesScreen(viewmodel: MatchesViewModel) {
     val uiState by viewmodel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         viewmodel.processIntent(MatchesIntent.LoadMatchesByLeague("PL"))
+        viewmodel.singleEvent.collectLatest { effect ->
+            when (effect) {
+                is MatchesEffect.NavigateToDetailMatch -> {
+                   //navigate sang detailMatch
+                    
+                }
+
+                is MatchesEffect.ShowError -> TODO()
+            }
+        }
     }
     Column(
         modifier = Modifier
@@ -209,38 +245,245 @@ fun MatchesScreen(viewmodel: MatchesViewModel) {
                 color = Color.White,
             )
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF00BFFF),
-                            Color(0xFF1E90FF)
-                        )
-                    )
-                )
-                .padding(vertical = 16.dp)
-        ) {
-            Column(
-                modifier = Modifier.align(Alignment.Center)
-            ) {
-                Text(
-                    text = "Vòng ${uiState.currentMatchday ?: "0"}",
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 28.sp,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+
+        RoundTabsHeader(
+            competitionName = uiState.competionInfo?.name,
+            competitionIcon = uiState.competionInfo?.emblem,
+            currentMatchday = uiState.currentMatchday ?: 1,
+            totalMatchdays = uiState.availableMatchday.size,
+            onRoundSelected = { selectedRound ->
+                viewmodel.sendIntent(MatchesIntent.SetMatchday(selectedRound))
             }
-        }
-        MatchList(uiState.matches)
+        )
+        MatchList(
+            matches = uiState.matches,
+            onMatchClick = { matchId ->
+                viewmodel.sendIntent(
+                    MatchesIntent.NavigateToDetailMatch(matchId)
+                )
+            }
+        )
     }
 }
 
 @Composable
-fun MatchList(matches: List<Match>) {
+fun RoundTabsHeader(
+    competitionName: String?,
+    competitionIcon: String?,
+    currentMatchday: Int,
+    totalMatchdays: Int,
+    onRoundSelected: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF00BFFF),
+                        Color(0xFF1E90FF)
+                    )
+                )
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                AsyncImage(
+                    model = competitionIcon,
+                    contentDescription = "icon league",
+                    placeholder = painterResource(R.drawable.premier_league),
+                    modifier = Modifier.size(42.dp)
+                )
+                Text(
+                    text = competitionName ?: "Lịch thi đấu",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+
+        RoundScrollTabs(
+            currentMatchday = currentMatchday,
+            totalMatchdays = totalMatchdays,
+            onRoundSelected = onRoundSelected
+        )
+
+    }
+}
+
+
+@Composable
+fun RoundScrollTabs(
+    currentMatchday: Int,
+    totalMatchdays: Int,
+    onRoundSelected: (Int) -> Unit
+) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    var isFirstOpenApp by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentMatchday, totalMatchdays) {
+        coroutineScope.launch {
+            val targetIndex = (currentMatchday - 1).coerceAtLeast(0)
+            if (!isFirstOpenApp) {
+                listState.scrollToItem(
+                    index = targetIndex,
+                    scrollOffset = -200 // Center the item
+                )
+                isFirstOpenApp = true
+            } else {
+                listState.animateScrollToItem(
+                    index = targetIndex,
+                    scrollOffset = -200 // Center the item
+                )
+            }
+        }
+    }
+
+    LazyRow(
+        state = listState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(totalMatchdays) { index ->
+            val roundNumber = index + 1
+            val isSelected = roundNumber == currentMatchday
+            val isCompleted = roundNumber < currentMatchday
+            val isUpcoming = roundNumber > currentMatchday
+
+            RoundTab(
+                roundNumber = roundNumber,
+                isSelected = isSelected,
+                isCompleted = isCompleted,
+                isUpcoming = isUpcoming,
+                onClick = { onRoundSelected(roundNumber) }
+            )
+        }
+    }
+}
+
+
+@Composable
+fun RoundTab(
+    roundNumber: Int,
+    isSelected: Boolean,
+    isCompleted: Boolean,
+    isUpcoming: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = when {
+            isSelected -> Color.White
+            else -> Purple
+        },
+        animationSpec = tween(300),
+        label = "backgroundColor"
+    )
+
+    val contentColor by animateColorAsState(
+        targetValue = when {
+            isSelected -> Color(0xFF1E90FF)
+            isCompleted -> Color.White.copy(alpha = 0.8f)
+            else -> Color.White.copy(alpha = 0.6f)
+        },
+        animationSpec = tween(300),
+        label = "contentColor"
+    )
+
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+
+    Card(
+        modifier = Modifier
+            .scale(scale)
+            .size(
+                width = if (isSelected) 70.dp else 60.dp,
+                height = if (isSelected) 40.dp else 36.dp
+            )
+            .clickable(
+                indication = ripple(
+                    color = if (isSelected) Color(0xFF1E90FF) else Color.White,
+                    radius = 30.dp
+                ),
+                interactionSource = remember { MutableInteractionSource() }
+            ) { onClick() },
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 6.dp else 2.dp
+        ),
+        shape = RoundedCornerShape(if (isSelected) 12.dp else 8.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "$roundNumber",
+                    color = contentColor,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = if (isSelected) 16.sp else 14.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                )
+                when {
+                    isSelected -> {
+                        Box(
+                            modifier = Modifier
+                                .size(4.dp)
+                                .background(
+                                    Color(0xFF1E90FF),
+                                    CircleShape
+                                )
+                        )
+                    }
+
+                    isCompleted -> {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Hoàn thành",
+                            tint = contentColor,
+                            modifier = Modifier.size(8.dp)
+                        )
+                    }
+
+                    isUpcoming -> {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Sắp đá",
+                            tint = contentColor,
+                            modifier = Modifier.size(8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MatchList(matches: List<Match>, onMatchClick: (Int) -> Unit = {}) {
     Timber.tag("MatchesScreen").d("Matches: $matches")
     //sắp xếp lại các trận đấu theo ngày(sử dụng group by để nhóm)
     val groupMatches = matches.groupBy { match ->
@@ -268,7 +511,10 @@ fun MatchList(matches: List<Match>) {
             }
             matchesForDate.forEach { match ->
                 MatchItem(
-                    match = match
+                    match = match,
+                    onMatchClick = { matchId ->
+                        onMatchClick(matchId)
+                    }
                 )
                 HorizontalDivider(
                     color = Color.LightGray,

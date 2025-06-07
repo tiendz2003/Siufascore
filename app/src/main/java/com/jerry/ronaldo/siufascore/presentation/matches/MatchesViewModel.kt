@@ -57,6 +57,10 @@ class MatchesViewModel @Inject constructor(
             is MatchesIntent.SetMatchday -> {
                 setMatchday(intent.matchDay)
             }
+
+            is MatchesIntent.NavigateToDetailMatch -> {
+                sendEvent(MatchesEffect.NavigateToDetailMatch(intent.matchId))
+            }
         }
     }
 
