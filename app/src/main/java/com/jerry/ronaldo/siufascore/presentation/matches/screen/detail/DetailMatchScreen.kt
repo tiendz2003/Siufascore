@@ -79,7 +79,7 @@ fun MatchHeaderCard() {
             containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 8.dp
+            defaultElevation = 6.dp
         )
     ) {
         Column(
