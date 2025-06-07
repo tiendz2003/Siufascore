@@ -25,10 +25,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -121,46 +123,68 @@ fun MatchSection() {
 @Composable
 fun MatchSectionPreview() {
     DetailTeamSection(
+        isHome = true,
         teamName = "Liverpool",
-        teamColor = Color.Red,
+        homeTeamColor = listOf(Color.Red, Color.Blue),
+        awayTeamColor = listOf(Color.White, Color.Black),
         teamLogo = "dưqd"
     )
 }
 
 @Composable
-fun DetailTeamSection(teamName: String,teamColor: Color,teamLogo:String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+fun DetailTeamSection(
+    modifier:Modifier = Modifier,
+    isHome: Boolean,
+    teamName: String,
+    homeTeamColor: List<Color>,
+    awayTeamColor: List<Color>,
+    teamLogo: String
+) {
+    Box(
+        modifier.background(
+            brush = Brush.horizontalGradient(
+                colors = if (isHome) {
+                    homeTeamColor
+                } else {
+                    awayTeamColor
+                },
+                startX = if (isHome) 0f else Float.POSITIVE_INFINITY,
+                endX = if (isHome) Float.POSITIVE_INFINITY else 0f
+            ) ,
+        )
     ){
-        Box(
-            modifier = Modifier.size(60.dp).background(teamColor, CircleShape),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if(isHome) Arrangement.Start else Arrangement.End
         ){
-            AsyncImage(
-                model = teamLogo,
-                contentDescription = teamName,
-                modifier = Modifier.size(40.dp),
-                placeholder = painterResource(R.drawable.premier_league),
-            )
-            Text(
-                text = teamName.take(1),
-                color = Color.White,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Surface(
-            color = teamColor,
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Text(
-                text = teamName,
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+            if(isHome){
+                AsyncImage(
+                    model = teamLogo,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(
+                    text = teamName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Start
+                )
+            }else{
+                AsyncImage(
+                    model = teamLogo,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(
+                    text = teamName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.End
+                )
+            }
         }
     }
 }
