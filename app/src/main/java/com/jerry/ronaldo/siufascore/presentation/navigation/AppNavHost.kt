@@ -18,8 +18,32 @@ fun AppNavHost(
         modifier = modifier,
     ) {
         homeSection(
-            onMatchClick = {},
+            navController = navController,
         )
-        newsScreen()
+        highlightScreen(
+            onVideoClick = { videoId ->
+                navController.navigateToDetailHighlight(videoId)
+            }
+        )
+        detailMatchScreen(
+            onBackClick = navController::popBackStack,
+            onMatchClick = {},
+            onTeamClick = { }
+        )
+        detailHighlightScreen(
+            showBackButton = true,
+            onBackClick = navController::popBackStack,
+            onVideoClick = {
+            }
+        )
+        newsScreen(
+            onNewsClick = { uriNews ->
+                navController.navigateToDetailNews(uriNews)
+            }
+        )
+        detailNewsScreen(
+            onBackClick = navController::popBackStack,
+            onShareClick = { }
+        )
     }
 }

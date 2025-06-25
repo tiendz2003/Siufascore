@@ -1,5 +1,6 @@
 package com.jerry.ronaldo.siufascore.presentation.matches
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.jerry.ronaldo.siufascore.base.BaseViewModel
 import com.jerry.ronaldo.siufascore.domain.usecase.GetLeagueInfoUseCase
@@ -9,13 +10,16 @@ import com.jerry.ronaldo.siufascore.presentation.mapper.mapToTeamStandingItems
 import com.jerry.ronaldo.siufascore.utils.MatchStatus
 import com.jerry.ronaldo.siufascore.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,11 +28,112 @@ import javax.inject.Inject
 class MatchesViewModel @Inject constructor(
     private val getMatchesByLeagueUseCase: GetMatchesByLeagueUseCase,
     private val getStandingByLeagueUseCase: GetStandingByLeagueUseCase,
-    private val getLeagueInfoUseCase: GetLeagueInfoUseCase
+    private val getLeagueInfoUseCase: GetLeagueInfoUseCase,
+    savedStateHandle: SavedStateHandle
 ) : BaseViewModel<MatchesIntent, MatchesState, MatchesEffect>() {
-    private val _uiState = MutableStateFlow(MatchesState())
-    override val uiState: StateFlow<MatchesState>
-        get() = _uiState.asStateFlow()
+
+    // Lấy arguments từ navigation (nếu có)
+    private val _competitionId = MutableStateFlow(
+        savedStateHandle.get<String>("competitionId") ?: "PL"
+    )// Default Premier League
+    private val _matchday = MutableStateFlow<Int?>(null)
+
+    // Trigger để control data loading
+    private val _refreshTrigger = MutableStateFlow(Unit)
+
+    // League info flow - lazy loading khi có subscriber
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val leagueInfoFlow = combine(
+        _competitionId,
+        _refreshTrigger
+    ) { competitionId, _ ->
+        competitionId
+    }.flatMapLatest { competitionId ->
+        getLeagueInfoUseCase(competitionId)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = Resource.Loading
+    )
+    private val currentMatchdayFlow = combine(
+        _matchday,
+        leagueInfoFlow
+    ) { userSelectedMatchday, leagueResource ->
+        when {
+            userSelectedMatchday != null -> userSelectedMatchday
+            leagueResource is Resource.Success -> leagueResource.data.currentSeason.currentMatchday
+            else -> null
+        }
+    }.filterNotNull()
+
+    // Matches flow - depends on league info
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val matchesFlow = combine(
+        _competitionId,
+        currentMatchdayFlow,
+        _refreshTrigger
+    ) { competitionId, matchday, _ ->
+        Pair(competitionId, matchday)
+    }.flatMapLatest { (competitionId, matchday) ->
+        getMatchesByLeagueUseCase(competitionId, matchday)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = Resource.Loading
+    )
+
+    // Standings flow - depends on league info
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val standingsFlow = combine(
+        _competitionId,
+        currentMatchdayFlow,
+        _refreshTrigger
+    ) { competitionId, matchday, _ ->
+        Pair(competitionId, matchday)
+    }.flatMapLatest { (competitionId, matchday) ->
+        getStandingByLeagueUseCase(competitionId, matchday)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = Resource.Loading
+    )
+
+    // Combined UI state
+    override val uiState: StateFlow<MatchesState> = combine(
+        _competitionId,
+        currentMatchdayFlow,
+        leagueInfoFlow,
+        matchesFlow,
+        standingsFlow
+    ) { competitionId, currentMatchday, leagueInfo, matches, standings ->
+        MatchesState(
+            competitionId = competitionId,
+            competionInfo = (leagueInfo as? Resource.Success)?.data,
+            currentMatchday = currentMatchday,
+
+            isLoading = leagueInfo is Resource.Loading,
+            error = (leagueInfo as? Resource.Error)?.exception?.message,
+
+            matches = (matches as? Resource.Success)?.data ?: emptyList(),
+            isMatchesLoading = matches is Resource.Loading,
+            matchesError = (matches as? Resource.Error)?.exception?.message,
+
+            standingItem = (standings as? Resource.Success)?.data?.mapToTeamStandingItems()
+                ?: emptyList(),
+            isStandingsLoading = standings is Resource.Loading,
+            standingError = (standings as? Resource.Error)?.exception?.message,
+
+            liveMatches = (matches as? Resource.Success)?.data?.filter {
+                MatchStatus.from(it.status) == MatchStatus.FINISHED
+            } ?: emptyList(),
+            availableMatchday = (1..38).toList()
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = MatchesState()
+    )
+
 
     init {
         viewModelScope.launch {
@@ -40,22 +145,27 @@ class MatchesViewModel @Inject constructor(
         }
     }
 
+
     override suspend fun processIntent(intent: MatchesIntent) {
         when (intent) {
             is MatchesIntent.LoadMatchesByLeague -> {
-                getLeagueInfo(intent.competitionId)
-            }
-
-            MatchesIntent.RefreshData -> {
-                refreshData()
-            }
-
-            is MatchesIntent.SetCompetition -> {
+                // Trigger data loading bằng cách emit trigger
                 setCompetition(intent.competitionId)
             }
 
+            MatchesIntent.RefreshData -> {
+                // Refresh bằng cách emit trigger mới
+                refreshData()
+            }
+
             is MatchesIntent.SetMatchday -> {
+                // Implement logic để change matchday
                 setMatchday(intent.matchDay)
+            }
+
+            is MatchesIntent.SetCompetition -> {
+                // Implement logic để change competition
+                setCompetition(intent.competitionId)
             }
 
             is MatchesIntent.NavigateToDetailMatch -> {
@@ -64,171 +174,26 @@ class MatchesViewModel @Inject constructor(
         }
     }
 
-    private fun updateState(newState: (MatchesState) -> MatchesState) {
+    /*private fun updateState(newState: (MatchesState) -> MatchesState) {
         _uiState.update(newState)
     }
+*/
 
-    private suspend fun loadMatchesAndStandingByLeague(
-        competitionId: String,
-        matchDay: Int
-    ) {
-        updateState {
-            it.copy(
-                isLoading = true,
-                error = null,
-                competitionId = competitionId,
-                currentMatchday = matchDay
-            )
-        }
-
-        val matchesDeferred = viewModelScope.async {
-            getMatchesByLeagueUseCase(competitionId, matchDay)
-        }
-        val standingDeferred = viewModelScope.async {
-            getStandingByLeagueUseCase(competitionId, matchDay)
-        }
-        try {
-            val matchesResult = matchesDeferred.await()
-            val standingResult = standingDeferred.await()
-            when {
-                matchesResult is Resource.Success && standingResult is Resource.Success -> {
-                    val standingItems = standingResult.data.mapToTeamStandingItems()
-                    val allMatches = matchesResult.data
-                    val liveMatches = allMatches.filter {
-                        MatchStatus.from(it.status) == MatchStatus.FINISHED
-                    }
-                    updateState {
-                        it.copy(
-                            matches = allMatches,
-                            liveMatches = liveMatches,
-                            standingItem = standingItems,
-                            availableMatchday = (1..38).toList(),
-                            currentMatchday = matchesResult.data.firstOrNull()?.season?.currentMatchday,
-                            isLoading = false,
-                            error = null
-                        )
-                    }
-                }
-
-                matchesResult is Resource.Error -> {
-                    updateState {
-                        it.copy(
-                            isLoading = false,
-                            error = matchesResult.exception.message
-                        )
-                    }
-                    sendEvent(
-                        MatchesEffect.ShowError(
-                            matchesResult.exception.message ?: "Lỗi khi tải trận đấu"
-                        )
-                    )
-                }
-
-                standingResult is Resource.Error -> {
-                    if (matchesResult is Resource.Success) {
-                        updateState {
-                            it.copy(
-                                matches = matchesResult.data,
-                                isLoading = false,
-                                error = null
-                            )
-                        }
-                    } else {
-                        updateState {
-                            it.copy(
-                                isLoading = false,
-                                error = standingResult.exception.message
-                            )
-                        }
-                        sendEvent(
-                            MatchesEffect.ShowError(
-                                standingResult.exception.message ?: "Lỗi khi tải bảng đấu"
-                            )
-                        )
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            updateState {
-                it.copy(
-                    isLoading = false,
-                    error = e.message
-                )
-            }
-            sendEvent(MatchesEffect.ShowError(e.message ?: "Lỗi khi tải dữ liệu"))
-        }
+    private fun setMatchday(matchday: Int) {
+        _matchday.value = matchday
+        // Flow sẽ tự động trigger lại matches và standings với matchday mới
     }
 
-    private suspend fun getLeagueInfo(competitionId: String) {
-        when (val leagueInfoResult = getLeagueInfoUseCase(competitionId)) {
-            is Resource.Error -> {
-                sendEvent(
-                    MatchesEffect.ShowError(
-                        leagueInfoResult.exception.message ?: "Lỗi khi tải thông tin đấu trường"
-                    )
-                )
-            }
-
-            Resource.Loading -> {
-                updateState {
-                    it.copy(
-                        isLoading = true,
-                        error = null
-                    )
-                }
-            }
-
-            is Resource.Success -> {
-                val competition = leagueInfoResult.data
-                updateState {
-                    it.copy(
-                        competitionId = competition.code,
-                        currentMatchday = competition.currentSeason.currentMatchday,
-                        competionInfo = competition,
-                        isLoading = false,
-                        error = null
-                    )
-                }
-                loadMatchesAndStandingByLeague(
-                    competitionId,
-                    competition.currentSeason.currentMatchday
-                )
-            }
-        }
-    }
-
-    private suspend fun setMatchday(matchDay: Int) {
-        val currentState = _uiState.value
-        currentState.competitionId?.let { competitionId ->
-            loadMatchesAndStandingByLeague(competitionId, matchDay)
-            updateState {
-                it.copy(
-                    currentMatchday = matchDay
-                )
-            }
-        }
-    }
-
-    private suspend fun setCompetition(competitionId: String) {
-        val currentMatchday = _uiState.value.currentMatchday
-        currentMatchday?.let { matchday ->
-            loadMatchesAndStandingByLeague(competitionId, matchday)
-            updateState {
-                it.copy(
-                    competitionId = competitionId
-                )
-            }
-        }
+    private fun setCompetition(competitionId: String) {
+        _competitionId.value = competitionId
+        _matchday.value = null // Reset matchday để dùng default từ league
     }
 
     private suspend fun refreshData() {
-        val currentState = _uiState.value
-        if (currentState.competitionId != null && currentState.currentMatchday != null) {
-            loadMatchesAndStandingByLeague(currentState.competitionId, currentState.currentMatchday)
-        }
+        _refreshTrigger.emit(Unit)
     }
 
-
 }
+
 
 

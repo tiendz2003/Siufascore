@@ -10,7 +10,11 @@ import com.jerry.ronaldo.siufascore.presentation.mapper.TeamStandingItem
 data class MatchesState(
     val matches: List<Match> = emptyList(),
     val isLoading: Boolean = false,
+    val isMatchesLoading: Boolean = false,
+    val isStandingsLoading: Boolean = false,
     val error: String? = null,
+    val matchesError: String? = null,
+    val standingError: String? = null,
     val competitionId: String? = null,
     val competionInfo: CompetitionLeague? = null,
     val currentMatchday: Int? = null,

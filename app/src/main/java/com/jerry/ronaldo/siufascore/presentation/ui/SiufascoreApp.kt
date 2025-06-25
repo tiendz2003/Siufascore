@@ -51,7 +51,7 @@ fun SiufascoreApp(
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo()
 ) {
     val shouldShowGradientBackground =
-        appState.currentTopLevelDestination == TopLevelDestination.NEWS
+        appState.currentTopLevelDestination == TopLevelDestination.HIGHLIGHT
     AppBackground(modifier = modifier) {
         AppGradientBackground(
             gradientColors = if (shouldShowGradientBackground) {
@@ -166,6 +166,7 @@ fun SiufaScoreApp(
                         },
                         modifier = modifier,
                         onActionClick = {
+
                         }
                     )
                 }

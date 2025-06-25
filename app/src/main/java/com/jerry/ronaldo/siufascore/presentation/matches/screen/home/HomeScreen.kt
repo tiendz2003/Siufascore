@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.jerry.ronaldo.siufascore.R
 import com.jerry.ronaldo.siufascore.domain.model.Match
@@ -79,6 +80,7 @@ import com.jerry.ronaldo.siufascore.presentation.matches.MatchesViewModel
 import com.jerry.ronaldo.siufascore.presentation.matches.screen.item.CompetitionSelectorItem
 import com.jerry.ronaldo.siufascore.presentation.matches.screen.item.MatchItem
 import com.jerry.ronaldo.siufascore.presentation.matches.screen.item.MatchLiveItem
+import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToDetailMatch
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple
 import com.jerry.ronaldo.siufascore.utils.MatchStatus
 import com.jerry.ronaldo.siufascore.utils.extractDateFromUtc
@@ -89,14 +91,15 @@ import timber.log.Timber
 
 @Composable
 fun HomeScreen(
-    onMatchClick: (Int) -> Unit,
-    viewmodel: MatchesViewModel = hiltViewModel()
+    navController: NavController,
+    viewmodel: MatchesViewModel = hiltViewModel(),
 ) {
     val tabs = listOf("Lịch thi đấu", "Bảng xếp hạng")
     val pagerState = rememberPagerState { tabs.size }
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewmodel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -141,7 +144,11 @@ fun HomeScreen(
                             matchTime = "45'+2",
                             venue = match.area.name,
                             status = MatchStatus.from(match.status)!!,
-                            onMatchClick = {}
+                            onMatchClick = {
+                                navController.navigateToDetailMatch(
+                                    matchId = match.id
+                                )
+                            }
                         )
                     }
                 }
@@ -219,15 +226,17 @@ fun HomeScreen(
 fun MatchesScreen(viewmodel: MatchesViewModel) {
     val uiState by viewmodel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
-        viewmodel.processIntent(MatchesIntent.LoadMatchesByLeague("PL"))
         viewmodel.singleEvent.collectLatest { effect ->
             when (effect) {
                 is MatchesEffect.NavigateToDetailMatch -> {
-                   //navigate sang detailMatch
-                    
+                    //navigate sang detailMatch
                 }
 
-                is MatchesEffect.ShowError -> TODO()
+                is MatchesEffect.ShowError -> {
+                    //show error
+                }
+
+                else -> {}
             }
         }
     }

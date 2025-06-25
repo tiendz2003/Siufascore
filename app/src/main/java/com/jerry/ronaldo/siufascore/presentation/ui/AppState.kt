@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.jerry.ronaldo.siufascore.presentation.navigation.TopLevelDestination
+import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToHighlight
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToHome
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToNews
 import com.jerry.ronaldo.siufascore.utils.NetworkMonitor
@@ -82,8 +83,10 @@ class AppState(
         }
         when(topLevelDestination){
             TopLevelDestination.HOME -> navController.navigateToHome(topLevelNavOptions)
-            TopLevelDestination.NEWS -> navController.navigateToNews(topLevelNavOptions)
+            TopLevelDestination.HIGHLIGHT -> navController.navigateToHighlight(topLevelNavOptions)
+            TopLevelDestination.NEWS -> {navController.navigateToNews(topLevelNavOptions)}
             TopLevelDestination.LIVES_STREAM -> {}
         }
     }
+
 }

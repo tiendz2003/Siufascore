@@ -2,12 +2,14 @@ package com.jerry.ronaldo.siufascore.presentation.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.filled.LiveTv
+import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.LiveTv
+import androidx.compose.material.icons.outlined.Newspaper
+import androidx.compose.material.icons.outlined.Tv
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.jerry.ronaldo.siufascore.R
 import kotlin.reflect.KClass
@@ -28,18 +30,25 @@ enum class TopLevelDestination(
         route = HomeRoute::class,
         baseRoute = HomeBaseRoute::class,
     ),
+    HIGHLIGHT(
+        selectedIcon = Icons.Default.Tv,
+        unselectedIcon = Icons.Outlined.Tv,
+        iconTextId = R.string.highlight,
+        titleTextId = R.string.highlight,
+        route = HighlightRoute::class,
+    ),
     NEWS(
-        selectedIcon = Icons.Default.AccountCircle,
-        unselectedIcon = Icons.Outlined.AccountCircle,
+        selectedIcon = Icons.Default.Newspaper,
+        unselectedIcon = Icons.Outlined.Newspaper,
         iconTextId = R.string.news,
         titleTextId = R.string.news,
         route = NewsRoute::class,
     ),
     LIVES_STREAM(
-        selectedIcon = Icons.Default.PlayArrow,
-        unselectedIcon = Icons.Outlined.PlayArrow,
+        selectedIcon = Icons.Default.LiveTv,
+        unselectedIcon = Icons.Outlined.LiveTv,
         iconTextId = R.string.live_stream,
         titleTextId = R.string.live_stream,
-        route = NewsRoute::class,
+        route = HighlightRoute::class,
     ),
 }

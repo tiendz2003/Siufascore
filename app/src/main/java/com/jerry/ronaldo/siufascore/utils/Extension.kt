@@ -10,10 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import retrofit2.HttpException
+import java.io.IOException
 import java.text.SimpleDateFormat
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.Locale
-import java.util.TimeZone
-
 
 
 fun String.formatDisplayDate(): String {
@@ -78,4 +81,77 @@ fun Modifier.shimmerEffect(): Modifier {
         label = "alpha"
     )
     return this.alpha(alpha)
+}
+fun String.getPositionAbbreviation(): String {
+    return when (this) {
+        "Goalkeeper" -> "GK"
+        "Left-Back" -> "LB"
+        "Centre-Back" -> "CB"
+        "Right-Back" -> "RB"
+        "Defensive Midfield" -> "DM"
+        "Central Midfield" -> "CM"
+        "Attacking Midfield" -> "AM"
+        "Left Winger" -> "LW"
+        "Right Winger" -> "RW"
+        "Centre-Forward" -> "CF"
+        else -> this.take(2).uppercase()
+    }
+}
+fun Throwable.handleException(): Exception {
+    return when (this) {
+        is HttpException -> {
+            when (this.code()) {
+                401 -> Exception("Không có quyền truy cập")
+                404 -> Exception("Không tìm thấy dữ liệu")
+                500 -> Exception("Lỗi sever")
+                else -> Exception("API Error: ${this.code()}")
+            }
+        }
+
+        is IOException -> Exception("Lỗi mạng:${this.localizedMessage}")
+        else -> Exception("Lỗi không rõ:${this.localizedMessage}")
+    }
+}
+fun String.formatYouTubeTime(): String {
+    return try {
+        // Parse chuỗi ISO 8601
+        val publishedTime = ZonedDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME)
+        val now = ZonedDateTime.now()
+
+        // Tính khoảng cách thời gian
+        val seconds = ChronoUnit.SECONDS.between(publishedTime, now)
+        val minutes = ChronoUnit.MINUTES.between(publishedTime, now)
+        val hours = ChronoUnit.HOURS.between(publishedTime, now)
+        val days = ChronoUnit.DAYS.between(publishedTime, now)
+        val weeks = days / 7
+        val months = ChronoUnit.MONTHS.between(publishedTime, now)
+        val years = ChronoUnit.YEARS.between(publishedTime, now)
+
+        when {
+            seconds < 60 -> "vừa xong"
+            minutes < 60 -> "$minutes phút trước"
+            hours < 24 -> "$hours giờ trước"
+            days < 7 -> "$days ngày trước"
+            weeks < 4 -> "$weeks tuần trước"
+            months < 12 -> "$months tháng trước"
+            else -> {
+                publishedTime.format(DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.US))
+            }
+        }
+    } catch (e: Exception) {
+        "Không rõ ngày đăng"
+    }
+}
+fun String?.formatViewCount(): String {
+    val viewCount = this?.toLongOrNull() ?: return "0 lượt xem"
+    return when {
+        viewCount >= 1_000_000 -> "%.1fM lượt xem".format(viewCount / 1_000_000.0)
+        viewCount >= 1_000 -> "%.1fK lượt xem".format(viewCount / 1_000.0)
+        else -> "$viewCount lượt xem"
+    }
+}
+fun String?.extractDescription(): String? {
+    return this?.let {
+        if (it.length > 200) it.substring(0, 200) + "..." else it
+    }
 }
