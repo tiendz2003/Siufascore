@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import com.jerry.ronaldo.siufascore.domain.model.Match
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,11 +55,15 @@ fun TopAppBar(
             }
         },
         actions = {
-            Icon(
-                imageVector = actionIcon,
-                contentDescription = actionIconContentDescription,
-                tint = Color.White
-            )
+            IconButton(
+                onClick = onActionClick
+            ) {
+                Icon(
+                    imageVector = actionIcon,
+                    contentDescription = actionIconContentDescription,
+                    tint = Color.White
+                )
+            }
         },
         colors = colors,
         modifier = modifier.testTag("siufascoreTopAppbar")
@@ -71,14 +75,17 @@ fun TopAppBar(
 fun DetailTopAppBar(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    scrollBehavior : TopAppBarScrollBehavior,
-    match: Match
+    scrollBehavior: TopAppBarScrollBehavior,
+    homeName: String,
+    awayName: String,
 ) {
     TopAppBar(
         title = {
             Text(
-                text = "${match.homeTeam.name} v ${match.awayTeam.name}",
-                style = MaterialTheme.typography.titleLarge
+                text = "$homeName v $awayName",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 18.sp
+                ),
             )
         },
         modifier = modifier,

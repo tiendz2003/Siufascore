@@ -124,8 +124,8 @@ fun StandingScreen(viewModel: MatchesViewModel = hiltViewModel()) {
                         textAlign = TextAlign.End
                     )
                 }
-                val homeListTeam = uiState.standingItem.filter { it.isHighlighted }
-                homeListTeam.forEach { teamStanding ->
+                // val homeListTeam = uiState.standingItem.filter { it.isHighlighted }
+                uiState.standingItems.forEach { teamStanding ->
                     TeamStandingScreen(teamStanding)
                     HorizontalDivider(
                         color = Color.LightGray.copy(

@@ -51,7 +51,7 @@ fun SiufascoreApp(
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo()
 ) {
     val shouldShowGradientBackground =
-        appState.currentTopLevelDestination == TopLevelDestination.NEWS
+        appState.currentTopLevelDestination == TopLevelDestination.HIGHLIGHT
     AppBackground(modifier = modifier) {
         AppGradientBackground(
             gradientColors = if (shouldShowGradientBackground) {
@@ -82,7 +82,6 @@ fun SiufascoreApp(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SiufaScoreApp(
     appState: AppState,
@@ -92,66 +91,98 @@ fun SiufaScoreApp(
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
 ) {
     val currentDestination = appState.currentDestination
-    AppNavigationSuiteScaffold(
-        navigationSuiteItems = {
-            appState.topLevelDestination.forEach { destination ->
-                val selected = currentDestination.isRouteInHierarchy(destination.baseRoute)
-                item(
-                    selected = selected,
-                    onClick = {
-                        appState.navigateToTopLevelDestination(destination)
-                    },
-                    icon = {
-                        AnimationNavigationIcon(
-                            iconRes = destination.unselectedIcon,
-                            selected = false,
-                            label = "icon_unselected"
-                        )
-                    },
-                    selectedIcon = {
-                        AnimationNavigationIcon(
-                            selectedIconRes = destination.selectedIcon,
-                            selected = true,
-                            label = "icon_selected"
-                        )
-                    },
-                    label = {
-                        AnimationNavigationLabel(
-                            text = stringResource(destination.iconTextId),
-                            selected = selected
-                        )
-                    },
-                    modifier = Modifier.testTag("AppNavItem")
-                )
-            }
-        },
-        windowAdaptiveInfo = windowAdaptiveInfo,
-    ) {
-        Scaffold(
-            modifier = modifier.semantics {
-                testTagsAsResourceId = true
+    val shouldShowBottomNavigation = appState.shouldShowBottomNavigation
+    val shouldShowTopAppBar = appState.currentTopLevelDestination != null
+
+    // Chỉ hiển thị navigation suite khi cần thiết
+    if (shouldShowBottomNavigation) {
+        AppNavigationSuiteScaffold(
+            navigationSuiteItems = {
+                appState.topLevelDestination.forEach { destination ->
+                    val selected = currentDestination.isRouteInHierarchy(destination.baseRoute)
+                    item(
+                        selected = selected,
+                        onClick = {
+                            appState.navigateToTopLevelDestination(destination)
+                        },
+                        icon = {
+                            AnimationNavigationIcon(
+                                iconRes = destination.unselectedIcon,
+                                selected = false,
+                                label = "icon_unselected"
+                            )
+                        },
+                        selectedIcon = {
+                            AnimationNavigationIcon(
+                                selectedIconRes = destination.selectedIcon,
+                                selected = true,
+                                label = "icon_selected"
+                            )
+                        },
+                        label = {
+                            AnimationNavigationLabel(
+                                text = stringResource(destination.iconTextId),
+                                selected = selected
+                            )
+                        },
+                        modifier = Modifier.testTag("AppNavItem")
+                    )
+                }
             },
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            snackbarHost = {
-                SnackbarHost(
-                    snackbarHostState,
-                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
-                )
-            }
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding)
-            ) {
+            windowAdaptiveInfo = windowAdaptiveInfo,
+        ) {
+            AppScaffoldContent(
+                appState = appState,
+                snackbarHostState = snackbarHostState,
+                onTopAppBarActionClick = onTopAppBarActionClick,
+                shouldShowTopAppBar = shouldShowTopAppBar,
+                modifier = modifier
+            )
+        }
+    } else {
+        // Không hiển thị bottom navigation
+        AppScaffoldContent(
+            appState = appState,
+            snackbarHostState = snackbarHostState,
+            onTopAppBarActionClick = onTopAppBarActionClick,
+            shouldShowTopAppBar = shouldShowTopAppBar,
+            modifier = modifier
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppScaffoldContent(
+    appState: AppState,
+    snackbarHostState: SnackbarHostState,
+    onTopAppBarActionClick: () -> Unit,
+    shouldShowTopAppBar: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        modifier = modifier.semantics {
+            testTagsAsResourceId = true
+        },
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = {
+            SnackbarHost(
+                snackbarHostState,
+                modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding)
+        ) {
+            if (shouldShowTopAppBar) {
                 val destination = appState.currentTopLevelDestination
-                var shouldShowTopAppBar = false
                 if (destination != null) {
-                    shouldShowTopAppBar = true
-                    //Triển khai topbar
                     TopAppBar(
                         titleRes = destination.titleTextId,
                         navigationIcon = Icons.Default.Search,
@@ -162,33 +193,35 @@ fun SiufaScoreApp(
                             containerColor = Purple
                         ),
                         onNavigationClick = {
-                            onTopAppBarActionClick()
+                            appState.navigateToSearch()
                         },
                         modifier = modifier,
                         onActionClick = {
+                            onTopAppBarActionClick()
                         }
                     )
                 }
-                Box(
-                    modifier = Modifier.consumeWindowInsets(
-                        if (shouldShowTopAppBar) {
-                            WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
-                        } else {
-                            WindowInsets(0, 0, 0, 0)
-                        }
-                    )
-                ) {
-                    AppNavHost(
-                        appState = appState,
-                        onShowSnackbar = { message, action ->
-                            snackbarHostState.showSnackbar(
-                                message = message,
-                                actionLabel = action,
-                                duration = SnackbarDuration.Short
-                            ) == SnackbarResult.ActionPerformed
-                        }
-                    )
-                }
+            }
+
+            Box(
+                modifier = Modifier.consumeWindowInsets(
+                    if (shouldShowTopAppBar) {
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+                    } else {
+                        WindowInsets(0, 0, 0, 0)
+                    }
+                )
+            ) {
+                AppNavHost(
+                    appState = appState,
+                    onShowSnackbar = { message, action ->
+                        snackbarHostState.showSnackbar(
+                            message = message,
+                            actionLabel = action,
+                            duration = SnackbarDuration.Short
+                        ) == SnackbarResult.ActionPerformed
+                    }
+                )
             }
         }
     }

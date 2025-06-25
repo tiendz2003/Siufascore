@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.jerry.ronaldo.siufascore" />
+                  <option name="mobileSdkAppId" value="1:565444510394:android:8dc3cc67f7888106fa7883" />
+                  <option name="projectId" value="minisofascore" />
+                  <option name="projectNumber" value="565444510394" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

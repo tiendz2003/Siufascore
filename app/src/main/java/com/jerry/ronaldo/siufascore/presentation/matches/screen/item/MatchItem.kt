@@ -71,7 +71,7 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
         ) {
             Text(
                 modifier = Modifier.padding(end = 4.dp),
-                text = match.homeTeam.shortName,
+                text = match.homeTeam.name,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Medium,
                 fontSize = 12.sp,
@@ -81,7 +81,7 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
                 textAlign = TextAlign.End
             )
             AsyncImage(
-                model = match.homeTeam.crest,
+                model = match.homeTeam.logo,
                 onError = {
                     Timber.tag("MatchesScreen").d("Error loading image: ${it.result.throwable}")
                 },
@@ -105,7 +105,7 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "${match.score.fullTime.home}  -  ${match.score.fullTime.away}",
+                text = "${match.score.fulltime.home}  -  ${match.score.fulltime.away}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -117,7 +117,7 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
             horizontalArrangement = Arrangement.Start
         ) {
             AsyncImage(
-                model = match.awayTeam.crest,
+                model = match.awayTeam.logo,
                 contentDescription = "${match.awayTeam} logo",
                 modifier = Modifier
                     .size(40.dp)
@@ -126,7 +126,7 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
 
             Text(
                 modifier = Modifier.padding(start = 4.dp),
-                text = match.awayTeam.shortName,
+                text = match.awayTeam.name,
                 fontWeight = FontWeight.Medium,
                 style = MaterialTheme.typography.titleLarge,
                 fontSize = 12.sp,
@@ -238,7 +238,7 @@ fun TeamSection(
         verticalArrangement = Arrangement.Center
     ) {
         AsyncImage(
-            model = team.crest,
+            model = team.logo,
             contentDescription = team.name,
             modifier = Modifier
                 .size(36.dp)
@@ -248,7 +248,7 @@ fun TeamSection(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = team.tla,
+            text = team.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleLarge.copy(

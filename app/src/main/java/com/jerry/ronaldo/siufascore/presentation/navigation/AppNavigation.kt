@@ -5,8 +5,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.jerry.ronaldo.siufascore.presentation.highlight.screen.ListHighLightsScreen
 import com.jerry.ronaldo.siufascore.presentation.matches.screen.home.HomeScreen
-import com.jerry.ronaldo.siufascore.presentation.matches.screen.home.StandingScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -21,17 +21,29 @@ fun NavGraphBuilder.homeSection(
 ) {
     navigation<HomeBaseRoute>(startDestination = HomeRoute) {
         composable<HomeRoute> {
-            HomeScreen(onMatchClick)
+            HomeScreen(
+                onMatchClick = { matchId ->
+                    onMatchClick(matchId)
+                }
+            )
         }
     }
 }
 
 @Serializable
-data object NewsRoute
+data object HighlightRoute
 
-fun NavController.navigateToNews(navOptions: NavOptions) = navigate(route = NewsRoute, navOptions)
-fun NavGraphBuilder.newsScreen() {
-    composable<NewsRoute> {
-        StandingScreen()
+fun NavController.navigateToHighlight(navOptions: NavOptions) =
+    navigate(route = HighlightRoute, navOptions)
+
+fun NavGraphBuilder.highlightScreen(
+    onVideoClick: (String) -> Unit
+) {
+    composable<HighlightRoute> {
+        ListHighLightsScreen(
+            onVideoClick = {
+                onVideoClick(it)
+            },
+        )
     }
 }

@@ -118,3 +118,113 @@ data class StandingListResponse(
         }
     }
 }
+//
+@Keep
+@Serializable
+data class StandingsResponse(
+    @SerialName("get")
+    val get: String,
+    @SerialName("parameters")
+    val parameters: StandingsParameters,
+    @SerialName("response")
+    val response: List<StandingsDataResponse>
+) {
+    @Keep
+    @Serializable
+    data class StandingsParameters(
+        @SerialName("league")
+        val league: String,
+        @SerialName("season")
+        val season: String
+    )
+
+    @Keep
+    @Serializable
+    data class StandingsDataResponse(
+        @SerialName("league")
+        val league: StandingsLeague
+    ) {
+        @Keep
+        @Serializable
+        data class StandingsLeague(
+            @SerialName("id")
+            val id: Int,
+            @SerialName("name")
+            val name: String,
+            @SerialName("country")
+            val country: String,
+            @SerialName("logo")
+            val logo: String?,
+            @SerialName("flag")
+            val flag: String?,
+            @SerialName("season")
+            val season: Int,
+            @SerialName("standings")
+            val standings: List<List<StandingTeam>>
+        )
+
+        @Keep
+        @Serializable
+        data class StandingTeam(
+            @SerialName("rank")
+            val rank: Int,
+            @SerialName("team")
+            val team: StandingTeamInfo,
+            @SerialName("points")
+            val points: Int,
+            @SerialName("goalsDiff")
+            val goalsDiff: Int,
+            @SerialName("group")
+            val group: String?,
+            @SerialName("form")
+            val form: String?,
+            @SerialName("status")
+            val status: String?,
+            @SerialName("description")
+            val description: String?,
+            @SerialName("all")
+            val all: StandingStats,
+            @SerialName("home")
+            val home: StandingStats,
+            @SerialName("away")
+            val away: StandingStats,
+            @SerialName("update")
+            val update: String?
+        ) {
+            @Keep
+            @Serializable
+            data class StandingTeamInfo(
+                @SerialName("id")
+                val id: Int,
+                @SerialName("name")
+                val name: String,
+                @SerialName("logo")
+                val logo: String?
+            )
+
+            @Keep
+            @Serializable
+            data class StandingStats(
+                @SerialName("played")
+                val played: Int,
+                @SerialName("win")
+                val win: Int,
+                @SerialName("draw")
+                val draw: Int,
+                @SerialName("lose")
+                val lose: Int,
+                @SerialName("goals")
+                val goals: StandingGoals
+            ) {
+                @Keep
+                @Serializable
+                data class StandingGoals(
+                    @SerialName("for")
+                    val goalsFor: Int,
+                    @SerialName("against")
+                    val goalsAgainst: Int
+                )
+            }
+        }
+    }
+}

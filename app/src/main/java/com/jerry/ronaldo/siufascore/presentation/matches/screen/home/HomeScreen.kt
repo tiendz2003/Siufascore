@@ -6,6 +6,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -48,6 +49,7 @@ import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,14 +65,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.jerry.ronaldo.siufascore.R
 import com.jerry.ronaldo.siufascore.domain.model.Match
 import com.jerry.ronaldo.siufascore.presentation.matches.MatchesEffect
@@ -82,6 +84,7 @@ import com.jerry.ronaldo.siufascore.presentation.matches.screen.item.MatchLiveIt
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple
 import com.jerry.ronaldo.siufascore.utils.MatchStatus
 import com.jerry.ronaldo.siufascore.utils.extractDateFromUtc
+import com.jerry.ronaldo.siufascore.utils.extractRoundNumber
 import com.jerry.ronaldo.siufascore.utils.formatDisplayDate
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -90,22 +93,27 @@ import timber.log.Timber
 @Composable
 fun HomeScreen(
     onMatchClick: (Int) -> Unit,
-    viewmodel: MatchesViewModel = hiltViewModel()
+    viewmodel: MatchesViewModel = hiltViewModel(),
 ) {
     val tabs = listOf("Lịch thi đấu", "Bảng xếp hạng")
     val pagerState = rememberPagerState { tabs.size }
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewmodel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    var selectedName by remember { mutableStateOf("Premier League") }
+    var selectedLogo by remember { mutableIntStateOf(R.drawable.premier_league) }
+    Timber.tag("HomeScreen").d("$uiState")
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
         CompetitionSelector(
-            selectedCompetitionId = uiState.competitionId ?: "PL",
-            onCompetitionSelected = { competitionId ->
+            selectedCompetitionId = uiState.competitionId ?: 39,
+            onCompetitionSelected = { competitionId, competitionLogo, competitionName ->
                 Timber.tag("HomeScreen").d("Competition selected: $competitionId")
+                selectedName = competitionName
+                selectedLogo = competitionLogo
                 viewmodel.sendIntent(MatchesIntent.LoadMatchesByLeague(competitionId))
             }
         )
@@ -136,12 +144,14 @@ fun HomeScreen(
                             matchId = match.id,
                             homeTeam = match.homeTeam,
                             awayTeam = match.awayTeam,
-                            homeScore = match.score.fullTime.home,
-                            awayScore = match.score.fullTime.away,
+                            homeScore = match.score.fulltime.home,
+                            awayScore = match.score.fulltime.away,
                             matchTime = "45'+2",
-                            venue = match.area.name,
-                            status = MatchStatus.from(match.status)!!,
-                            onMatchClick = {}
+                            venue = match.venue.name,
+                            status = MatchStatus.from(match.status.short)!!,
+                            onMatchClick = {
+
+                            }
                         )
                     }
                 }
@@ -205,7 +215,7 @@ fun HomeScreen(
                 .heightIn(min = 400.dp, max = 850.dp)
         ) { page ->
             when (page) {
-                0 -> MatchesScreen(viewmodel)
+                0 -> MatchesScreen(viewmodel, selectedName, selectedLogo,onMatchClick)
                 else -> StandingScreen()
             }
         }
@@ -216,18 +226,25 @@ fun HomeScreen(
 
 
 @Composable
-fun MatchesScreen(viewmodel: MatchesViewModel) {
+fun MatchesScreen(
+    viewmodel: MatchesViewModel,
+    selectedName: String,
+    selectedLogo: Int,
+    onMatchClick: (Int) -> Unit
+) {
     val uiState by viewmodel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
-        viewmodel.processIntent(MatchesIntent.LoadMatchesByLeague("PL"))
         viewmodel.singleEvent.collectLatest { effect ->
             when (effect) {
                 is MatchesEffect.NavigateToDetailMatch -> {
-                   //navigate sang detailMatch
-                    
+                    onMatchClick(effect.matchId)
                 }
 
-                is MatchesEffect.ShowError -> TODO()
+                is MatchesEffect.ShowError -> {
+                    //show error
+                }
+
+                else -> {}
             }
         }
     }
@@ -247,12 +264,12 @@ fun MatchesScreen(viewmodel: MatchesViewModel) {
     ) {
 
         RoundTabsHeader(
-            competitionName = uiState.competionInfo?.name,
-            competitionIcon = uiState.competionInfo?.emblem,
-            currentMatchday = uiState.currentMatchday ?: 1,
+            competitionName = selectedName,
+            competitionIcon = selectedLogo,
+            currentMatchday = uiState.currentMatchday.extractRoundNumber().toInt(),
             totalMatchdays = uiState.availableMatchday.size,
             onRoundSelected = { selectedRound ->
-                viewmodel.sendIntent(MatchesIntent.SetMatchday(selectedRound))
+                viewmodel.sendIntent(MatchesIntent.SetMatchday(selectedRound.toString()))
             }
         )
         MatchList(
@@ -269,7 +286,7 @@ fun MatchesScreen(viewmodel: MatchesViewModel) {
 @Composable
 fun RoundTabsHeader(
     competitionName: String?,
-    competitionIcon: String?,
+    competitionIcon: Int,
     currentMatchday: Int,
     totalMatchdays: Int,
     onRoundSelected: (Int) -> Unit
@@ -296,11 +313,10 @@ fun RoundTabsHeader(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                AsyncImage(
-                    model = competitionIcon,
-                    contentDescription = "icon league",
-                    placeholder = painterResource(R.drawable.premier_league),
-                    modifier = Modifier.size(42.dp)
+                Image(
+                    imageVector = ImageVector.vectorResource(competitionIcon),
+                    contentDescription = "Logo Competition",
+                    modifier = Modifier.size(48.dp)
                 )
                 Text(
                     text = competitionName ?: "Lịch thi đấu",
@@ -487,7 +503,7 @@ fun MatchList(matches: List<Match>, onMatchClick: (Int) -> Unit = {}) {
     Timber.tag("MatchesScreen").d("Matches: $matches")
     //sắp xếp lại các trận đấu theo ngày(sử dụng group by để nhóm)
     val groupMatches = matches.groupBy { match ->
-        match.utcDate.extractDateFromUtc()
+        match.date.extractDateFromUtc()
     }.toSortedMap()
     Column(
         modifier = Modifier
@@ -528,8 +544,8 @@ fun MatchList(matches: List<Match>, onMatchClick: (Int) -> Unit = {}) {
 
 @Composable
 fun CompetitionSelector(
-    selectedCompetitionId: String,
-    onCompetitionSelected: (String) -> Unit,
+    selectedCompetitionId: Int,
+    onCompetitionSelected: (Int, Int, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -537,22 +553,22 @@ fun CompetitionSelector(
     val competitions = remember {
         listOf(
             CompetitionSelector(
-                id = "PL",
+                id = 39,
                 logo = R.drawable.premier_league,
                 name = "Premier League"
             ),
             CompetitionSelector(
-                id = "SA",
+                id = 135,
                 logo = R.drawable.seria,
                 name = "Seria A"
             ),
             CompetitionSelector(
-                id = "CL",
+                id = 78,
                 logo = R.drawable.uefa_champions_league_,
-                name = "Champions League"
+                name = "Bundesliga"
             ),
             CompetitionSelector(
-                id = "PD",
+                id = 140,
                 logo = R.drawable.laliga,
                 name = "La Liga"
             )
@@ -579,7 +595,7 @@ fun CompetitionSelector(
                 isSelected = competition.id == selectedCompetitionId,
                 onClick = {
                     if (competition.id != selectedCompetitionId) {
-                        onCompetitionSelected(competition.id)
+                        onCompetitionSelected(competition.id, competition.logo, competition.name)
                     }
                 },
                 animationDelay = index * 50
@@ -617,7 +633,7 @@ fun EmptyMatchesLive(modifier: Modifier = Modifier) {
 }
 
 data class CompetitionSelector(
-    val id: String,
+    val id: Int,
     @DrawableRes val logo: Int,
     val name: String
 )

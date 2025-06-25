@@ -1,80 +1,82 @@
 package com.jerry.ronaldo.siufascore.data.mapper
 
-import com.jerry.ronaldo.siufascore.data.model.StandingListResponse
-import com.jerry.ronaldo.siufascore.data.model.StandingListResponse.AreaResponse
-import com.jerry.ronaldo.siufascore.data.model.StandingListResponse.CompetitionResponse
-import com.jerry.ronaldo.siufascore.data.model.StandingListResponse.SeasonResponse
-import com.jerry.ronaldo.siufascore.data.model.StandingListResponse.StandingResponse
-import com.jerry.ronaldo.siufascore.data.model.StandingListResponse.StandingResponse.TableResponse
-import com.jerry.ronaldo.siufascore.data.model.StandingListResponse.StandingResponse.TableResponse.TeamResponse
-import com.jerry.ronaldo.siufascore.domain.model.Area
-import com.jerry.ronaldo.siufascore.domain.model.Competition
-import com.jerry.ronaldo.siufascore.domain.model.Season
-import com.jerry.ronaldo.siufascore.domain.model.Standing
-import com.jerry.ronaldo.siufascore.domain.model.StandingData
-import com.jerry.ronaldo.siufascore.domain.model.Team
+import com.jerry.ronaldo.siufascore.data.model.StandingsResponse
+import com.jerry.ronaldo.siufascore.data.model.StandingsResponse.StandingsDataResponse.StandingTeam
+import com.jerry.ronaldo.siufascore.data.model.StandingsResponse.StandingsDataResponse.StandingTeam.StandingStats
+import com.jerry.ronaldo.siufascore.data.model.StandingsResponse.StandingsDataResponse.StandingsLeague
+import com.jerry.ronaldo.siufascore.domain.model.LeagueStandings
+import com.jerry.ronaldo.siufascore.domain.model.StandingGroup
+import com.jerry.ronaldo.siufascore.domain.model.StandingTeamInfo
+import com.jerry.ronaldo.siufascore.domain.model.StandingsLeagueInfo
 import com.jerry.ronaldo.siufascore.domain.model.TeamStanding
+import com.jerry.ronaldo.siufascore.domain.model.TeamStats
 
-fun StandingListResponse.toDomain():StandingData{
-    return StandingData(
-        area = area.toDomain(),
-        competition = competition.toDomain(),
-        season = season.toDomain(),
-        standings = standings.map { it.toDomain() }
+fun StandingsResponse.toDomain(): List<LeagueStandings> {
+    return this.response.map { standingsData ->
+        standingsData.toDomain()
+    }
+}
+
+fun StandingsResponse.StandingsDataResponse.toDomain(): LeagueStandings {
+    return LeagueStandings(
+        league = this.league.mapToStandingsLeagueInfo(),
+        standingGroups = this.league.standings.mapToStandingGroups()
     )
 }
-fun AreaResponse.toDomain():Area{
-    return Area(
+
+private fun StandingsLeague.mapToStandingsLeagueInfo(): StandingsLeagueInfo {
+    return StandingsLeagueInfo(
         id = this.id,
         name = this.name,
-        code = this.code,
-        flag = this.flag
+        country = this.country,
+        logo = this.logo ?: "",
+        flag = this.flag ?: "",
+        season = this.season
     )
 }
-fun CompetitionResponse.toDomain(): Competition {
-    return Competition(
-        id = id,
-        name = name,
-        code = code,
-        emblem = emblem,
-        type = type
-    )
+
+fun List<List<StandingTeam>>.mapToStandingGroups(): List<StandingGroup> {
+    return this.map { group ->
+        StandingGroup(
+            teams = group.map { teamStanding ->
+                teamStanding.toDomain()
+            }
+        )
+    }
 }
-fun SeasonResponse.toDomain(): Season {
-    return Season(
-        id = id,
-        startDate = startDate,
-        endDate = endDate,
-        currentMatchday = currentMatchday
-    )
-}
-fun StandingResponse.toDomain(): Standing {
-    return Standing(
-        type = type,
-        stage = stage,
-        table = table.map { it.toDomain() }
-    )
-}
-fun TableResponse.toDomain(): TeamStanding {
+
+fun StandingTeam.toDomain(): TeamStanding {
     return TeamStanding(
-        position = position,
-        team = team.toDomain(),
-        playedGames = playedGames,
-        won = won,
-        draw = draw,
-        lost = lost,
-        goalsFor = goalsFor,
-        goalsAgainst = goalsAgainst,
-        goalDifference = goalDifference,
-        points = points
+        rank = this.rank,
+        team = this.team.toDomain(),
+        points = this.points,
+        goalsDifference = this.goalsDiff,
+        group = this.group,
+        form = this.form,
+        status = this.status,
+        description = this.description,
+        allGames = this.all.toDomain(),
+        homeGames = this.home.toDomain(),
+        awayGames = this.away.toDomain(),
+        lastUpdate = this.update
     )
 }
-fun TeamResponse.toDomain(): Team {
-    return Team(
-        id = id,
-        name = name,
-        shortName = shortName,
-        tla = tla,
-        crest = crest
+
+fun StandingTeam.StandingTeamInfo.toDomain(): StandingTeamInfo {
+    return StandingTeamInfo(
+        id = this.id,
+        name = this.name,
+        logo = this.logo ?: ""
+    )
+}
+
+fun StandingStats.toDomain(): TeamStats {
+    return TeamStats(
+        played = this.played,
+        wins = this.win,
+        draws = this.draw,
+        losses = this.lose,
+        goalsFor = this.goals.goalsFor,
+        goalsAgainst = this.goals.goalsAgainst
     )
 }

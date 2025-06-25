@@ -4,4 +4,6 @@
     <string name="live_stream">Trực tiếp</string>
     <string name="not_connected">Bạn chưa kết nối mạng.Vui lòng kiểm tra kết nối mạng</string>
     <string name="home">Trang chủ</string>
+    <string name="highlight">Highlight</string>
+    <string name="web_client_id">565444510394-8tq5j6jq8bv9amdl1leek004vhha0do3.apps.googleusercontent.com</string>
 </resources>
