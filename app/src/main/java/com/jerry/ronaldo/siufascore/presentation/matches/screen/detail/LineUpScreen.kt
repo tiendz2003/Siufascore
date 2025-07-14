@@ -1,8 +1,7 @@
 package com.jerry.ronaldo.siufascore.presentation.matches.screen.detail
 
-import FormationMapper
+import com.jerry.ronaldo.siufascore.utils.FormationMapper
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut

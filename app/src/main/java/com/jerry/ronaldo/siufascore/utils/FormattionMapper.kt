@@ -1,3 +1,5 @@
+package com.jerry.ronaldo.siufascore.utils
+
 import com.jerry.ronaldo.siufascore.domain.model.FormationLayout
 import com.jerry.ronaldo.siufascore.domain.model.PlayerMatchStats
 import com.jerry.ronaldo.siufascore.domain.model.PlayerPosition
