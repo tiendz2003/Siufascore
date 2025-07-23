@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="?android:attr/selectableItemBackground"
+    android:paddingVertical="16dp"
+    android:paddingHorizontal="4dp">
+
+    <!-- Quality Icon -->
+    <ImageView
+        android:id="@+id/imageQualityIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/background_quality_icon"
+        android:padding="6dp"
+        android:src="@drawable/baseline_high_quality_24"
+        app:tint="@color/white"
+        tools:src="@drawable/baseline_high_quality_24" />
+
+    <!-- Quality Info -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/textQualityName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="1080p" />
+
+            <!-- Quality Badge -->
+            <TextView
+                android:id="@+id/textQualityBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/background_quality_badge"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:text="HD"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textQualityDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#CCFFFFFF"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:text="6000kbps • 60fps • 1920×1080"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+    <!-- Selection Indicator -->
+    <RadioButton
+        android:id="@+id/radioQualitySelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:buttonTint="@color/purple"
+        android:clickable="false"
+        android:focusable="false" />
+
+    <!-- Active Indicator -->
+    <View
+        android:id="@+id/viewActiveIndicator"
+        android:layout_width="4dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/purple"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

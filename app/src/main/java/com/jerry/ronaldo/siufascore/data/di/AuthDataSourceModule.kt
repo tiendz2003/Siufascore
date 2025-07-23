@@ -2,7 +2,9 @@ package com.jerry.ronaldo.siufascore.data.di
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.jerry.ronaldo.siufascore.BuildConfig
 import com.jerry.ronaldo.siufascore.data.source.FacebookAuthDataSource
 import com.jerry.ronaldo.siufascore.data.source.FirebaseAuthDataSource
 import com.jerry.ronaldo.siufascore.data.source.GoogleAuthDataSource
@@ -54,4 +56,7 @@ object FirebaseModule {
     fun provideFirebaseFireStore(): FirebaseFirestore {
         return FirebaseFirestore.getInstance()
     }
+    @Provides
+    @Singleton
+    fun provideFirebaseDatabase(): FirebaseDatabase = FirebaseDatabase.getInstance(BuildConfig.FIREBASE_DATABASE_URL)
 }

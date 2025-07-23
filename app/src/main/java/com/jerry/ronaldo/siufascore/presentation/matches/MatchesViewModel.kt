@@ -3,7 +3,6 @@ package com.jerry.ronaldo.siufascore.presentation.matches
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.jerry.ronaldo.siufascore.base.BaseViewModel
-import com.jerry.ronaldo.siufascore.domain.repository.FavoriteTeamsRepository
 import com.jerry.ronaldo.siufascore.domain.usecase.football.GetLeagueInfoUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.football.GetMatchesByLeagueUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.football.GetStandingByLeagueUseCase
@@ -26,7 +25,6 @@ class MatchesViewModel @Inject constructor(
     private val getMatchesByLeagueUseCase: GetMatchesByLeagueUseCase,
     private val getStandingByLeagueUseCase: GetStandingByLeagueUseCase,
     private val getLeagueInfoUseCase: GetLeagueInfoUseCase,
-    private val favorite:FavoriteTeamsRepository,
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel<MatchesIntent, MatchesState, MatchesEffect>() {
 
@@ -106,17 +104,15 @@ class MatchesViewModel @Inject constructor(
         _competitionId,
         currentMatchdayFlow,
         leagueInfoFlow,
-        matchesFlow,
+         matchesFlow,
       //  standingsFlow
-    ) { competitionId, currentMatchday, leagueInfo, matches ->
+    ) { competitionId,currentMatchday, leagueInfo,matches ->
         MatchesState(
             competitionId = competitionId,
             competionInfo = (leagueInfo as? Resource.Success)?.data,
             currentMatchday = currentMatchday,
-
             isLoading = leagueInfo is Resource.Loading,
             error = (leagueInfo as? Resource.Error)?.exception?.message,
-
             matches = (matches as? Resource.Success)?.data ?: emptyList(),
             isMatchesLoading = matches is Resource.Loading,
             matchesError = (matches as? Resource.Error)?.exception?.message,

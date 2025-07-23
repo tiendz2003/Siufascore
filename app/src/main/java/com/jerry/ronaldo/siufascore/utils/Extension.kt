@@ -1,5 +1,10 @@
 package com.jerry.ronaldo.siufascore.utils
 
+import android.app.Activity
+import android.content.Context
+import android.view.View
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.ColorRes
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -10,8 +15,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.palette.graphics.Palette
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.Query
+import com.jerry.ronaldo.siufascore.R
 import com.jerry.ronaldo.siufascore.domain.model.PlayerSeasonStats
+import com.jerry.ronaldo.siufascore.presentation.ui.PremierPurpleDark
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import timber.log.Timber
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -19,7 +42,9 @@ import java.time.Month
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 
 fun String.formatDisplayDate(): String {
@@ -165,6 +190,48 @@ fun String.extractYear(): Int {
     return match?.value?.toIntOrNull() ?: 0  // Convert sang Int, fallback 0 nếu null
 }
 
+fun Long.formatTimestamp(format: String = "dd/MM/yyyy HH:mm"): String {
+    // Sử dụng try-catch để xử lý các trường hợp timestamp không hợp lệ một cách an toàn
+    return try {
+        // Tạo một đối tượng Date từ timestamp (this)
+        val date = Date(this)
+        // Tạo một đối tượng định dạng với kiểu và ngôn ngữ mặc định của thiết bị
+        val simpleDateFormat = SimpleDateFormat(format, Locale.getDefault())
+        // Trả về chuỗi đã được định dạng
+        simpleDateFormat.format(date)
+    } catch (e: Exception) {
+        // In ra lỗi để gỡ rối nếu cần
+        e.printStackTrace()
+        // Trả về chuỗi rỗng nếu có vấn đề xảy ra
+        ""
+    }
+}
+
+fun Long.toTimeAgo(): String {
+    val now = System.currentTimeMillis()
+    // Đảm bảo timestamp không phải ở tương lai
+    if (this > now || this <= 0) {
+        return "thời gian không hợp lệ"
+    }
+
+    val diffInMillis = now - this
+
+    // Chuyển đổi sang các đơn vị thời gian khác nhau
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis)
+    val hours = TimeUnit.MILLISECONDS.toHours(diffInMillis)
+    val days = TimeUnit.MILLISECONDS.toDays(diffInMillis)
+
+    return when {
+        seconds < 60 -> "vừa xong"
+        minutes < 60 -> "$minutes phút trước"
+        hours < 24 -> "$hours giờ trước"
+        days < 7 -> "$days ngày trước"
+        // Nếu lâu hơn một tuần, hiển thị ngày tháng cụ thể
+        else -> this.formatTimestamp("dd/MM/yyyy")
+    }
+}
+
 fun String.formatYouTubeTime(): String {
     return try {
         // Parse chuỗi ISO 8601
@@ -237,4 +304,121 @@ fun String.getLeagueIdFromCountry(): Int? {
         "russia" -> 235      // Premier League
         else -> null
     }
+}
+
+suspend fun Context.extractAllColors(
+    imageUrl: String,
+): ExtractedColors {
+    return withContext(Dispatchers.IO) {
+        try {
+            val request = ImageRequest.Builder(this@extractAllColors).data(imageUrl)
+                .size(300, 300)
+                .allowHardware(false)
+                .build()
+
+            val drawable = this@extractAllColors.imageLoader.execute(request).image
+            val bitmap = drawable?.toBitmap()
+            bitmap?.let { bitmap ->
+                val palette = Palette.from(bitmap).generate()
+                ExtractedColors(
+                    dominant = palette.dominantSwatch?.rgb?.let { Color(it) } ?: PremierPurpleDark,
+                    vibrant = palette.vibrantSwatch?.rgb?.let { Color(it) } ?: PremierPurpleDark,
+                    muted = palette.mutedSwatch?.rgb?.let { Color(it) } ?: PremierPurpleDark,
+                    lightVibrant = palette.lightVibrantSwatch?.rgb?.let { Color(it) }
+                        ?: PremierPurpleDark,
+                    onVibrant = palette.vibrantSwatch?.titleTextColor?.let { Color(it) }
+                        ?: Color.White
+                )
+            } ?: ExtractedColors()
+        } catch (e: Exception) {
+            Timber.tag("extractAllColors").e("${e.message}")
+            ExtractedColors()
+        }
+    }
+}
+
+inline fun databaseListener(
+    crossinline onChildAdded: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    crossinline onChildChanged: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    crossinline onChildRemoved: (snapshot: DataSnapshot) -> Unit = { _ -> },
+    crossinline onChildMoved: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    crossinline onCancelled: (error: DatabaseError) -> Unit = { _ -> }
+): ChildEventListener = object : ChildEventListener {
+    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+        onChildAdded(snapshot, previousChildName)
+    }
+
+    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+        onChildChanged(snapshot, previousChildName)
+    }
+
+    override fun onChildRemoved(snapshot: DataSnapshot) {
+        onChildRemoved(snapshot)
+    }
+
+    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+        onChildMoved(snapshot, previousChildName)
+    }
+
+    override fun onCancelled(error: DatabaseError) {
+        onCancelled(error)
+    }
+
+}
+
+inline fun Query.setListener(
+    crossinline onChildAdded: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    crossinline onChildChanged: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    crossinline onChildRemoved: (snapshot: DataSnapshot) -> Unit = { _ -> },
+    crossinline onChildMoved: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    crossinline onCancelled: (error: DatabaseError) -> Unit = { _ -> }
+): ChildEventListener {
+    val listener = databaseListener(
+        onChildAdded, onChildChanged, onChildRemoved, onChildMoved, onCancelled
+    )
+    this.addChildEventListener(listener)
+    return listener
+}
+
+fun Query.initDatabaseListener(
+    onChildAdded: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    onChildChanged: (snapshot: DataSnapshot, previousChildName: String?) -> Unit = { _, _ -> },
+    onChildRemoved: (snapshot: DataSnapshot) -> Unit = { _ -> },
+    onCancelled: (error: DatabaseError) -> Unit = { _ -> }
+) = setListener(
+    onChildAdded = onChildAdded,
+    onChildChanged = onChildChanged,
+    onChildRemoved = onChildRemoved,
+    onCancelled = onCancelled
+)
+
+fun Activity.showSnackbar(message: String, duration: Int = Snackbar.LENGTH_SHORT) {
+    findViewById<View>(android.R.id.content).showSnackbar(
+        message = message,
+        duration = duration,
+        backgroundColorRes = R.color.purple,
+        textColorRes = android.R.color.white
+    )
+}
+
+fun View.showSnackbar(
+    message: String,
+    duration: Int,
+    @ColorRes backgroundColorRes: Int,
+    @ColorRes textColorRes: Int
+) {
+    Snackbar.make(this, message, duration).apply {
+        setBackgroundTint(ContextCompat.getColor(context, backgroundColorRes))
+        setTextColor(ContextCompat.getColor(context, textColorRes))
+        show()
+    }
+}
+
+fun Fragment.handleBack(action: () -> Unit) {
+    requireActivity().onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            action()
+        }
+    })
+
 }

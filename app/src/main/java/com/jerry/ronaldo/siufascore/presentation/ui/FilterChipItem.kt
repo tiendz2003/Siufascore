@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilterChip
@@ -18,8 +19,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.jerry.ronaldo.siufascore.utils.Chip
 
 @Composable
 fun FilterChipItem(
@@ -73,6 +76,47 @@ fun FilterChipItem(
                     selectedBorderColor = MaterialTheme.colorScheme.primary,
                     borderColor = Purple
                 ),
+            )
+        }
+    }
+}
+
+@Composable
+fun <T> TypeFilterChips(
+    items:List<T>,
+    selectedType: T,
+    onTypeSelected: (T) -> Unit,
+    icon:(T) -> ImageVector,
+    modifier: Modifier = Modifier
+) where T: Chip {
+    LazyRow(
+        modifier = modifier.padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(items) { item ->
+            FilterChip(
+                selected = selectedType == item,
+                onClick = { onTypeSelected(item) },
+                label = {
+                    Text(
+                        text = item.displayName,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = icon(item),
+                        contentDescription = null
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = Purple,
+                    selectedLabelColor = Color.White,
+                    selectedLeadingIconColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
             )
         }
     }

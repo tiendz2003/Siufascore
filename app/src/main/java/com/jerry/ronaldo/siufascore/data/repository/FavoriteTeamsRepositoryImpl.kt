@@ -20,7 +20,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FavoriteTeamsRepositoryImpl @Inject constructor(
     private val firebaseDataSource: FirebaseAuthDataSource,
     private val firestore: FirebaseFirestore,
@@ -28,9 +30,11 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
 ) : FavoriteTeamsRepository {
     companion object {
         private const val COLLECTION_FAVORITE_TEAMS = "favorite_teams"
+        private const val COLLECTION_FAVORITE_PLAYERS = "favorite_players"
         private const val FIELD_USER_ID = "userId"
         private const val FIELD_TEAM_ID = "teamId"
         private const val FIELD_ADDED_TIMESTAMP = "addedTimestamp"
+        private const val FIELD_IS_ENABLE_NOTIFICATION = "enableNotification"
     }
 
     private val currentUserId: Flow<String?> = firebaseDataSource.currentUser.map { it?.id }
@@ -52,7 +56,8 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
                 addedTimestamp = System.currentTimeMillis(),
                 userId = userId,
                 team = team,
-                league = league
+                league = league,
+                enableNotification = false
             )
 
             batch.set(docRef, favoriteTeam)
@@ -87,7 +92,28 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
             snapshot.toObjects(FavoriteTeam::class.java)
         }
     }
+    override suspend fun toggleNotification(teamId: Int, isEnabled: Boolean): Result<Unit> {
+        return executedWithUserCheck { userId ->
+            Timber.tag("FavoriteTeamsRepositoryImpl")
+                .d("Toggling notification for team $teamId to $isEnabled")
 
+            val documentId = "${userId}_${teamId}"
+            val docRef = firestore.collection(COLLECTION_FAVORITE_TEAMS).document(documentId)
+
+            // Kiểm tra document tồn tại
+            val document = docRef.get().await()
+            if (!document.exists()) {
+                throw FavoriteTeamException.TeamNotFound
+            }
+
+            // Update chỉ field isEnableNotification
+            val updates = mapOf(FIELD_IS_ENABLE_NOTIFICATION to isEnabled)
+            docRef.update(updates).await()
+
+            Timber.tag("FavoriteTeamsRepositoryImpl")
+                .d("Successfully updated notification status for team $teamId")
+        }
+    }
     override suspend fun isFavoriteTeam(teamId: Int): Result<Boolean> {
         return try {
             val userId = currentUserId.firstOrNull()
@@ -120,6 +146,8 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
             .orderBy(FIELD_ADDED_TIMESTAMP, Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    Timber.tag("FavoriteTeamsRepositoryImpl")
+                        .e(error, "Error fetching favorite teams")
                     close(error)
                     return@addSnapshotListener
                 }
@@ -130,7 +158,7 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
             }
 
         awaitClose { listener.remove() }
-    }.catch { error ->
+    }.catch {
         emit(emptyList())
     }.flowOn(ioDispatcher)
 

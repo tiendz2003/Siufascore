@@ -1,9 +1,12 @@
 package com.jerry.ronaldo.siufascore.presentation.navigation
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navOptions
+import com.jerry.ronaldo.siufascore.presentation.LiveStreamPlayerActivity
 import com.jerry.ronaldo.siufascore.presentation.ui.AppState
 
 @Composable
@@ -14,6 +17,7 @@ fun AppNavHost(
 ) {
     val navController = appState.navController
     val isAuthenticated = appState.isAuthenticated
+    val context = LocalContext.current
     NavHost(
         navController = navController,
         startDestination = if (isAuthenticated) HomeBaseRoute else AuthRoute,
@@ -54,7 +58,14 @@ fun AppNavHost(
                 )
             }
         )
-
+        favoriteScreen(
+            onTeamClick = { teamId, leagueId ->
+                navController.navigateToDetailTeamScreen(
+                    teamId = teamId,
+                    leagueId = leagueId
+                )
+            }
+        )
         highlightScreen(
             onVideoClick = { videoId ->
                 navController.navigateToDetailHighlight(videoId)
@@ -85,12 +96,21 @@ fun AppNavHost(
             onShareClick = { }
         )
 
+        liveStreamScreen(
+
+            onClick = { matchId ->
+                val intent = Intent(context,LiveStreamPlayerActivity::class.java).apply {
+                    putExtra("MATCH_ID", matchId)
+                }
+                context.startActivity(intent)
+            }
+        )
         searchScreen(
             onPlayerClick = { id ->
                 navController.navigateToDetailPlayerScreen(id)
             },
-            onTeamClick = { teamId,leagueId ->
-                navController.navigateToDetailTeamScreen(teamId,leagueId)
+            onTeamClick = { teamId, leagueId ->
+                navController.navigateToDetailTeamScreen(teamId, leagueId)
             },
             onBackClick = navController::popBackStack
         )
@@ -100,7 +120,7 @@ fun AppNavHost(
         )
         detailTeamScreen(
             onBackClick = navController::popBackStack,
-            onPlayerClick = { playerId->
+            onPlayerClick = { playerId ->
                 navController.navigateToDetailPlayerScreen(playerId)
             }
         )

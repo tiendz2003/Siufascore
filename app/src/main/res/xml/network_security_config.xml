@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cho development server -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">tiendzvd2003.ap-northeast-1.elasticbeanstalk.com</domain>
+        <!-- Thêm các domain khác nếu cần -->
+    </domain-config>
+
+    <!-- Giữ an toàn cho các domain khác -->
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

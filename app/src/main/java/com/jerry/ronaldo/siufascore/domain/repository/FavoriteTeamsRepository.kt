@@ -10,5 +10,6 @@ interface FavoriteTeamsRepository {
     suspend fun removeFavoriteTeam(teamId: Int): Result<Unit>
     suspend fun getFavoriteTeams(): Result<List<FavoriteTeam>>
     suspend fun isFavoriteTeam(teamId: Int): Result<Boolean>
+    suspend fun toggleNotification(teamId: Int, isEnabled: Boolean): Result<Unit>
     fun observeFavoriteTeams(): Flow<List<FavoriteTeam>>
 }

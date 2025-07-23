@@ -212,7 +212,7 @@ fun HomeScreen(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 400.dp, max = 850.dp)
+                .heightIn(min = 400.dp, max = 950.dp)
         ) { page ->
             when (page) {
                 0 -> MatchesScreen(viewmodel, selectedName, selectedLogo,onMatchClick)
@@ -564,7 +564,7 @@ fun CompetitionSelector(
             ),
             CompetitionSelector(
                 id = 78,
-                logo = R.drawable.uefa_champions_league_,
+                logo = R.drawable.bundesliga_logo,
                 name = "Bundesliga"
             ),
             CompetitionSelector(

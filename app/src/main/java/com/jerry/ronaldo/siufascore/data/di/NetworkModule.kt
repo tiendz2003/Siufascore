@@ -3,12 +3,15 @@ package com.jerry.ronaldo.siufascore.data.di
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.jerry.ronaldo.siufascore.BuildConfig
 import com.jerry.ronaldo.siufascore.data.remote.FootballApiService
+import com.jerry.ronaldo.siufascore.data.remote.LiveStreamingApiService
 import com.jerry.ronaldo.siufascore.data.remote.NewsApiService
 import com.jerry.ronaldo.siufascore.data.remote.YoutubeApiService
 import com.jerry.ronaldo.siufascore.utils.FootBallClientId
 import com.jerry.ronaldo.siufascore.utils.FootBallOkHttp
 import com.jerry.ronaldo.siufascore.utils.FootballAuthorizationInterceptor
 import com.jerry.ronaldo.siufascore.utils.FootballRetrofit
+import com.jerry.ronaldo.siufascore.utils.LiveStreamOkHttp
+import com.jerry.ronaldo.siufascore.utils.LiveStreamRetrofit
 import com.jerry.ronaldo.siufascore.utils.NewsClientId
 import com.jerry.ronaldo.siufascore.utils.NewsOkHttp
 import com.jerry.ronaldo.siufascore.utils.NewsRetrofit
@@ -86,11 +89,19 @@ object NetworkModule {
             authorizationInterceptor = authorizationInterceptor
         )
     }
-
     @Provides
     @Singleton
     @NewsOkHttp
-    fun provideNewsOkHttpClient(
+    fun provideNewsOkHttpClient(baseClient: OkHttpClient): OkHttpClient = baseClient
+
+    @Provides
+    @Singleton
+    @LiveStreamOkHttp
+    fun provideLiveStreamOkHttpClient(baseClient: OkHttpClient): OkHttpClient = baseClient
+
+    @Provides
+    @Singleton
+    fun provideBaseOkHttpClient(
         httpLoggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient {
         return OkHttpClient.Builder()
@@ -156,12 +167,27 @@ object NetworkModule {
     @Singleton
     @NewsRetrofit
     fun provideNewsRetrofit(
-        @NewsOkHttp okHttpClient: OkHttpClient,
+        okHttpClient: OkHttpClient,
         json: Json
     ): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
             .baseUrl("https://eventregistry.org/")
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory(contentType))
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @LiveStreamRetrofit
+    fun provideLiveStreamRetrofit(
+        okHttpClient: OkHttpClient,
+        json: Json
+    ): Retrofit {
+        val contentType = "application/json".toMediaType()
+        return Retrofit.Builder()
+            .baseUrl("http://tiendzvd2003.ap-northeast-1.elasticbeanstalk.com/")
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
@@ -185,6 +211,11 @@ object NetworkModule {
         return retrofit.create(NewsApiService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideLiveStreamApiService(@LiveStreamRetrofit retrofit: Retrofit): LiveStreamingApiService {
+        return retrofit.create(LiveStreamingApiService::class.java)
+    }
     @Provides
     @Singleton
     fun provideJson(): Json {

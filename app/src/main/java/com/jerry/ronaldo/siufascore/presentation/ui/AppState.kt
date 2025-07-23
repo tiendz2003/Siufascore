@@ -15,8 +15,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.jerry.ronaldo.siufascore.data.remote.AuthRepository
 import com.jerry.ronaldo.siufascore.presentation.navigation.TopLevelDestination
+import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToFavorite
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToHighlight
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToHome
+import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToLiveStreamScreen
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToNews
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToSearch
 import com.jerry.ronaldo.siufascore.utils.AuthResult
@@ -108,12 +110,10 @@ class AppState(
         }
         when (topLevelDestination) {
             TopLevelDestination.HOME -> navController.navigateToHome(topLevelNavOptions)
+            TopLevelDestination.FAVORITE -> navController.navigateToFavorite(topLevelNavOptions)
             TopLevelDestination.HIGHLIGHT -> navController.navigateToHighlight(topLevelNavOptions)
-            TopLevelDestination.NEWS -> {
-                navController.navigateToNews(topLevelNavOptions)
-            }
-
-            TopLevelDestination.LIVES_STREAM -> {}
+            TopLevelDestination.NEWS -> navController.navigateToNews(topLevelNavOptions)
+            TopLevelDestination.LIVES_STREAM -> {navController.navigateToLiveStreamScreen(topLevelNavOptions)}
         }
     }
 

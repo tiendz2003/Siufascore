@@ -190,7 +190,7 @@ private fun AppScaffoldContent(
                         actionIcon = Icons.Default.Settings,
                         actionIconContentDescription = "Setting",
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Purple
+                            containerColor = PremierPurpleDark
                         ),
                         onNavigationClick = {
                             appState.navigateToSearch()
@@ -204,7 +204,7 @@ private fun AppScaffoldContent(
             }
 
             Box(
-                modifier = Modifier.consumeWindowInsets(
+                modifier = Modifier.weight(1f).consumeWindowInsets(
                     if (shouldShowTopAppBar) {
                         WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
                     } else {

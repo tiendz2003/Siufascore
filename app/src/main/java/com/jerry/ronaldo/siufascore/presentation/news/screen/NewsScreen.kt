@@ -46,7 +46,6 @@ fun NewsScreen(
         newsPagingData.loadState.refresh is LoadState.Loading -> {
             ShimmerNewsScreen(modifier) // Hiển thị shimmer khi đang tải
         }
-
         newsPagingData.loadState.refresh is LoadState.Error -> {
             val error = newsPagingData.loadState.refresh as LoadState.Error
             ErrorScreen(

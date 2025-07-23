@@ -52,6 +52,7 @@ fun AppNavigationSuiteScaffold(
             selectedTextColor = AppNavigationDefaults.navigationSelectedItemColor(),
             unselectedTextColor = AppNavigationDefaults.navigationContentColor(),
             indicatorColor = Color.Transparent,
+
         ),
         navigationRailItemColors = NavigationRailItemDefaults.colors(
             selectedIconColor = AppNavigationDefaults.navigationSelectedItemColor(),
@@ -79,9 +80,7 @@ fun AppNavigationSuiteScaffold(
         containerColor = Color.White,
         navigationSuiteColors = NavigationSuiteDefaults.colors(
             navigationBarContentColor = Color.White,
-            navigationBarContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(
-                alpha = 0.3f
-            ),
+            navigationBarContainerColor = PremierPurpleDark,
             navigationRailContainerColor = Color.Transparent,
         ),
         modifier = modifier,
@@ -119,10 +118,10 @@ class NiaNavigationSuiteScope internal constructor(
 
 object AppNavigationDefaults {
     @Composable
-    fun navigationContentColor() = MaterialTheme.colorScheme.onSurfaceVariant
+    fun navigationContentColor() = Color.White
 
     @Composable
-    fun navigationSelectedItemColor() = Purple
+    fun navigationSelectedItemColor() = Color.White
 
     @Composable
     fun navigationIndicatorColor() = Color.Transparent

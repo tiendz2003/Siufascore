@@ -8,6 +8,8 @@ import coil3.disk.DiskCache
 import coil3.disk.directory
 import coil3.memory.MemoryCache
 import coil3.request.crossfade
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.Logger
 import com.jerry.ronaldo.siufascore.data.source.GoogleAuthDataSource
 import com.jerry.ronaldo.siufascore.utils.AuthConfig
 import dagger.hilt.android.HiltAndroidApp
@@ -18,6 +20,7 @@ import javax.inject.Inject
 class MyApplication : Application(), SingletonImageLoader.Factory {
     @Inject
     lateinit var googleAuthDataSource: GoogleAuthDataSource
+    @Inject lateinit var database :FirebaseDatabase
     override fun onCreate() {
         super.onCreate()
         /*FacebookSdk.sdkInitialize(applicationContext)
@@ -27,6 +30,7 @@ class MyApplication : Application(), SingletonImageLoader.Factory {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+        database.setLogLevel(Logger.Level.DEBUG)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {

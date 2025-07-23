@@ -103,7 +103,7 @@ fun ListHighLightsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
                     .then(
                         if (isDropdownExpanded) {
                             Modifier.pointerInput(Unit) {
@@ -210,9 +210,9 @@ fun ThumbnailSection(
         modifier = modifier.clip(RoundedCornerShape(8.dp))
     ) {
         AsyncImage(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.padding(6.dp).size(150.dp).clip(RoundedCornerShape(8.dp)),
             model = thumbnailUrl,
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Crop,
             contentDescription = "thumbnailUrl",
             placeholder = painterResource(R.drawable.premier_league),
             error = painterResource(R.drawable.premier_league),
@@ -328,14 +328,10 @@ fun LeagueDropdownMenu(
             selectedLeague = selectedLeague,
             expanded = expanded,
             enabled = enabled,
-            onClick = {
-                if (enabled) expanded = !expanded
-            },
             modifier = Modifier
+                .menuAnchor()
                 .fillMaxWidth()
-                .clickable {
-                    if (enabled) expanded = !expanded
-                }
+
         )
 
         // Dropdown Menu
@@ -364,7 +360,6 @@ private fun LeagueDropdownTrigger(
     selectedLeague: League?,
     expanded: Boolean,
     enabled: Boolean,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -385,7 +380,6 @@ private fun LeagueDropdownTrigger(
             }
         ),
         shadowElevation = if (expanded) 4.dp else 1.dp,
-        onClick = onClick
     ) {
         Row(
             modifier = Modifier
@@ -411,7 +405,7 @@ private fun LeagueDropdownTrigger(
                     Column {
                         Text(
                             text = selectedLeague.name,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Medium,
                             color = if (enabled) {
                                 MaterialTheme.colorScheme.onSurface
@@ -421,7 +415,7 @@ private fun LeagueDropdownTrigger(
                         )
                         Text(
                             text = selectedLeague.country,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
                                 alpha = if (enabled) 0.7f else 0.4f
                             )

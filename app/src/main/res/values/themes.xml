@@ -1,14 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Siufascore" parent="android:Theme.Material.Light.NoActionBar"/>
+    <style name="Theme.LiveStream" parent="@style/Theme.Material3.DayNight.NoActionBar">
+        <item name="android:fontFamily">@font/premierleague_regular</item>
+    </style>
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/purple</item>
 
-        <item name="windowSplashScreenAnimatedIcon">@drawable/premier_league</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo</item>
 
         <item name="windowSplashScreenAnimationDuration">1000</item>
 
         <item name="postSplashScreenTheme">@style/Theme.Siufascore</item>
+    </style>
+    <style name="ShapeAppearance.App.CircleImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="behavior_peekHeight">400dp</item>
+        <item name="behavior_hideable">true</item>
+        <item name="behavior_skipCollapsed">false</item>
     </style>
 </resources>
 

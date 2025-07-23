@@ -70,7 +70,7 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
             horizontalArrangement = Arrangement.End
         ) {
             Text(
-                modifier = Modifier.padding(end = 4.dp),
+                modifier = Modifier.weight(1f, fill = false).padding(end = 4.dp),
                 text = match.homeTeam.name,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Medium,
@@ -88,8 +88,8 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
                 placeholder = painterResource(R.drawable.ic_launcher_foreground),
                 contentDescription = "${match.homeTeam} logo",
                 modifier = Modifier
-                    .size(40.dp)
-                    .padding(4.dp),
+                    .size(50.dp)
+                    .padding(8.dp),
                 contentScale = ContentScale.Crop
             )
         }
@@ -107,6 +107,7 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
             Text(
                 text = "${match.score.fulltime.home}  -  ${match.score.fulltime.away}",
                 fontSize = 18.sp,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
@@ -120,8 +121,8 @@ fun MatchItem(match: Match, onMatchClick: (Int) -> Unit) {
                 model = match.awayTeam.logo,
                 contentDescription = "${match.awayTeam} logo",
                 modifier = Modifier
-                    .size(40.dp)
-                    .padding(4.dp),
+                    .size(50.dp)
+                    .padding(8.dp),
             )
 
             Text(

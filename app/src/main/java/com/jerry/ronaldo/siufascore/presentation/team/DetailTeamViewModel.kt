@@ -40,7 +40,6 @@ class DetailTeamViewModel @AssistedInject constructor(
     private val _selectedTab = MutableStateFlow(PlayerDetailTab.OVERVIEW)
     private val _isTogglingFavorite = MutableStateFlow(false) // Đổi tên cho rõ nghĩa
 
-    // 1. Chỉ cần MỘT stateIn cho resource là đủ, đơn giản và hiệu quả
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _teamStatisticResource: StateFlow<Resource<ResponseTeamStatistics>> =
         _season.flatMapLatest { season ->

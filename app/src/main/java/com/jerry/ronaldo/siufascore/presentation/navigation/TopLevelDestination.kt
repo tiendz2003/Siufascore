@@ -2,6 +2,8 @@ package com.jerry.ronaldo.siufascore.presentation.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Newspaper
@@ -30,6 +32,13 @@ enum class TopLevelDestination(
         route = HomeRoute::class,
         baseRoute = HomeBaseRoute::class,
     ),
+    FAVORITE(
+        selectedIcon = Icons.Default.Favorite,
+        unselectedIcon = Icons.Default.FavoriteBorder,
+        iconTextId = R.string.favorite,
+        titleTextId = R.string.favorite,
+        route = FavoriteRoute::class,
+    ),
     HIGHLIGHT(
         selectedIcon = Icons.Default.Tv,
         unselectedIcon = Icons.Outlined.Tv,
@@ -49,6 +58,6 @@ enum class TopLevelDestination(
         unselectedIcon = Icons.Outlined.LiveTv,
         iconTextId = R.string.live_stream,
         titleTextId = R.string.live_stream,
-        route = HighlightRoute::class,
+        route = LiveStreamRoute::class,
     ),
 }
