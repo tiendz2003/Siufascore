@@ -6,4 +6,12 @@
     <string name="home">Trang chủ</string>
     <string name="highlight">Highlight</string>
     <string name="web_client_id">565444510394-8tq5j6jq8bv9amdl1leek004vhha0do3.apps.googleusercontent.com</string>
+    <string name="favorite">Yêu thích</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="play_pause">Dừng</string>
+    <string name="auto_quality">chất lượng tự động</string>
+    <string name="cancel">Thoát</string>
+    <string name="select_quality">Chọn chất lượng</string>
+    <string name="auto_quality_description">Hãy chọn chất lượng video tùy vào nhu cầu</string>
 </resources>

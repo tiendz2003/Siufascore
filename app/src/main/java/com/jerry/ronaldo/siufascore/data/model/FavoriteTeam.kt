@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 data class FavoriteTeam @JvmOverloads constructor(
     val userId: String = "",
     val addedTimestamp:Long = System.currentTimeMillis(),
+    val enableNotification:Boolean = false,
     val team:TeamInfo = TeamInfo(),
     val league:LeagueInfo = LeagueInfo()
 )

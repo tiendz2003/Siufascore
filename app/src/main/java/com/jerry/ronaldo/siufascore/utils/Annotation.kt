@@ -37,6 +37,14 @@ annotation class NewsClientId
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class NewsRetrofit
+//LIVESTREAM
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class LiveStreamRetrofit
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class LiveStreamOkHttp
 
 //Coroutine Context
 @Qualifier

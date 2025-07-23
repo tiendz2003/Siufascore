@@ -42,7 +42,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Pages
 import androidx.compose.material.icons.filled.Person
@@ -53,8 +52,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -100,6 +97,7 @@ import com.jerry.ronaldo.siufascore.presentation.search.item.SearchLoadingConten
 import com.jerry.ronaldo.siufascore.presentation.search.item.TeamSearchItem
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple80
+import com.jerry.ronaldo.siufascore.presentation.ui.TypeFilterChips
 import com.jerry.ronaldo.siufascore.utils.getLeagueIdFromCountry
 
 @Composable
@@ -146,11 +144,15 @@ fun SearchScreen(
             },
             modifier = Modifier.statusBarsPadding()
         )
-        SearchTypeFilterChips(
+        TypeFilterChips(
+            items = SearchType.entries,
             selectedType = uiState.selectedSearchType,
-            onTypeSelected = { type ->
+            onTypeSelected = {type->
                 searchViewModel.sendIntent(SearchIntent.ChangedSearchType(type))
-            }
+            },
+            icon = { type->
+                type.icon
+            },
         )
         when {
             uiState.isLoading && uiState.query.isNotEmpty() -> {
@@ -337,47 +339,6 @@ private fun SearchResultsContent(
     }
 }
 
-@Composable
-fun SearchTypeFilterChips(
-    selectedType: SearchType,
-    onTypeSelected: (SearchType) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyRow(
-        modifier = modifier.padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(SearchType.entries.toTypedArray()) { type ->
-            FilterChip(
-                selected = selectedType == type,
-                onClick = { onTypeSelected(type) },
-                label = {
-                    Text(
-                        text = type.displayName,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = when (type) {
-                            SearchType.TEAMS -> Icons.Default.Groups
-                            SearchType.PLAYERS -> Icons.Default.Person
-                        },
-                        contentDescription = null
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Purple,
-                    selectedLabelColor = Color.White,
-                    selectedLeadingIconColor = Color.White
-                ),
-                shape = RoundedCornerShape(12.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun PlayersResultsContent(

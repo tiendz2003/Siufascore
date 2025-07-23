@@ -54,7 +54,14 @@ fun AppNavHost(
                 )
             }
         )
-
+        favoriteScreen(
+            onTeamClick = { teamId, leagueId ->
+                navController.navigateToDetailTeamScreen(
+                    teamId = teamId,
+                    leagueId = leagueId
+                )
+            }
+        )
         highlightScreen(
             onVideoClick = { videoId ->
                 navController.navigateToDetailHighlight(videoId)
@@ -89,8 +96,8 @@ fun AppNavHost(
             onPlayerClick = { id ->
                 navController.navigateToDetailPlayerScreen(id)
             },
-            onTeamClick = { teamId,leagueId ->
-                navController.navigateToDetailTeamScreen(teamId,leagueId)
+            onTeamClick = { teamId, leagueId ->
+                navController.navigateToDetailTeamScreen(teamId, leagueId)
             },
             onBackClick = navController::popBackStack
         )
@@ -100,7 +107,7 @@ fun AppNavHost(
         )
         detailTeamScreen(
             onBackClick = navController::popBackStack,
-            onPlayerClick = { playerId->
+            onPlayerClick = { playerId ->
                 navController.navigateToDetailPlayerScreen(playerId)
             }
         )

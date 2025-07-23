@@ -47,6 +47,8 @@ fun DetailTeamScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),

@@ -53,6 +53,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -62,8 +63,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,6 +77,8 @@ import coil3.compose.AsyncImage
 import com.jerry.ronaldo.siufascore.presentation.player.item.PlayerStatItem
 import com.jerry.ronaldo.siufascore.presentation.player.item.StatSection
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple
+import com.jerry.ronaldo.siufascore.utils.ExtractedColors
+import com.jerry.ronaldo.siufascore.utils.extractAllColors
 import kotlinx.coroutines.launch
 
 
@@ -201,60 +206,69 @@ fun StatsSection(
     )
     var showBottomSheet by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 12.dp),
-    ) {
-        SeasonSelector(
-            season = uiState.currentSeason.toString(),
-            onChangeSeason = {
-                showBottomSheet = true
-            }
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
+    if (!uiState.hasStatData) {
+        EmptyStatsState(
+            modifier = modifier
+                .fillMaxSize()
                 .padding(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            PlayerStatItem(
-                label = "Ra sân (Dự bị)",
-                value = uiState.totalAppearances.toString(),
-                subValue = uiState.totalSubstitutes.toString(),
-                modifier = Modifier.weight(1f)
-            )
-            PlayerStatItem(
-                label = "Kiến tạo",
-                value = uiState.totalAssists.toString(),
-                modifier = Modifier.weight(1f)
-            )
-            PlayerStatItem(
-                label = "Ghi bàn",
-                value = uiState.totalGoals.toString(),
-                modifier = Modifier.weight(1f)
-            )
-        }
+        )
+    } else {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
         ) {
-            uiState.stats.forEach { (leagueName, stat) ->
-                StatSection(
-                    title = leagueName.name,
-                    stats = stat,
-                    leagueLogo = leagueName.logo ?: "",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+            SeasonSelector(
+                season = uiState.currentSeason.toString(),
+                onChangeSeason = {
+                    showBottomSheet = true
+                }
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                PlayerStatItem(
+                    label = "Ra sân (Dự bị)",
+                    value = uiState.totalAppearances.toString(),
+                    subValue = uiState.totalSubstitutes.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+                PlayerStatItem(
+                    label = "Kiến tạo",
+                    value = uiState.totalAssists.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+                PlayerStatItem(
+                    label = "Ghi bàn",
+                    value = uiState.totalGoals.toString(),
+                    modifier = Modifier.weight(1f)
                 )
             }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                uiState.stats.forEach { (leagueName, stat) ->
+                    StatSection(
+                        title = leagueName.name,
+                        stats = stat,
+                        leagueLogo = leagueName.logo ?: "",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    )
+                }
+            }
+
+
         }
-
-
     }
+
     if (showBottomSheet) {
         SeasonSelectionBottomSheet(
             initialSelectedSeason = uiState.currentSeason,
@@ -411,6 +425,11 @@ fun PlayerHeader(
     onBackClick: () -> Unit,
     onToggleFollow: () -> Unit = {}
 ) {
+    var extractedColors by remember { mutableStateOf(ExtractedColors()) }
+    val context = LocalContext.current
+    LaunchedEffect(playerTeamLogo) {
+        extractedColors = context.extractAllColors(playerImage)
+    }
     Box(
         modifier = modifier,
     ) {
@@ -418,7 +437,13 @@ fun PlayerHeader(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    color = Purple,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            extractedColors.vibrant,
+                            extractedColors.dominant,
+                            Color.Black
+                        )
+                    ),
                     shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
                 )
         )
@@ -451,7 +476,10 @@ fun PlayerHeader(
                 ),
                 shape = RoundedCornerShape(50)
             ) {
-                Text(if(isFavorite) "Bỏ theo dõi" else "Theo dõi", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    if (isFavorite) "Bỏ theo dõi" else "Theo dõi",
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
         Row(

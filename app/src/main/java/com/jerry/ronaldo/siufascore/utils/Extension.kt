@@ -1,5 +1,9 @@
 package com.jerry.ronaldo.siufascore.utils
 
+import android.content.Context
+import android.content.res.Configuration
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -10,8 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.palette.graphics.Palette
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
+import com.jerry.ronaldo.siufascore.R
 import com.jerry.ronaldo.siufascore.domain.model.PlayerSeasonStats
+import com.jerry.ronaldo.siufascore.presentation.ui.PremierPurpleDark
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import timber.log.Timber
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -236,5 +252,33 @@ fun String.getLeagueIdFromCountry(): Int? {
         "austria" -> 218     // Bundesliga
         "russia" -> 235      // Premier League
         else -> null
+    }
+}
+suspend fun Context.extractAllColors(
+    imageUrl: String,
+):ExtractedColors {
+    return withContext(Dispatchers.IO){
+        try {
+            val request = ImageRequest.Builder(this@extractAllColors).data(imageUrl)
+                .size(300,300)
+                .allowHardware(false)
+                .build()
+
+            val drawable = this@extractAllColors.imageLoader.execute(request).image
+            val bitmap = drawable?.toBitmap()
+            bitmap?.let { bitmap->
+                val palette = Palette.from(bitmap).generate()
+                ExtractedColors(
+                    dominant = palette.dominantSwatch?.rgb?.let { Color(it) }?: PremierPurpleDark,
+                    vibrant = palette.vibrantSwatch?.rgb?.let { Color(it) }?: PremierPurpleDark,
+                    muted = palette.mutedSwatch?.rgb?.let { Color(it) }?: PremierPurpleDark,
+                    lightVibrant = palette.lightVibrantSwatch?.rgb?.let { Color(it) }?: PremierPurpleDark,
+                    onVibrant = palette.vibrantSwatch?.titleTextColor?.let { Color(it) } ?:Color.White
+                )
+            }?:ExtractedColors()
+        }catch (e:Exception){
+            Timber.tag("extractAllColors").e("${e.message}")
+            ExtractedColors()
+        }
     }
 }

@@ -1,4 +1,3 @@
-
 import com.android.build.api.dsl.ApplicationBuildType
 import java.util.Properties
 
@@ -49,24 +48,32 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        viewBinding = true
     }
 }
 
 dependencies {
-    implementation ("androidx.core:core-splashscreen:1.0.1")
+    implementation ("androidx.fragment:fragment-ktx:1.6.2")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.palette:palette-ktx:1.0.0")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
     val credential_ver = "1.5.0"
-    implementation ("androidx.credentials:credentials:$credential_ver")
-    implementation ("androidx.credentials:credentials-play-services-auth:$credential_ver")
+    implementation ("com.amazonaws:ivs-player:1.42.0")
+    implementation("androidx.credentials:credentials:$credential_ver")
+    implementation("androidx.credentials:credentials-play-services-auth:$credential_ver")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-    implementation (platform("com.google.firebase:firebase-bom:32.3.1"))
-    implementation ("com.google.firebase:firebase-auth-ktx")
-    implementation ("com.google.firebase:firebase-analytics-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-firestore")
     // Google Sign-In
-    implementation ("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 
     // Facebook Login
-    implementation ("com.facebook.android:facebook-login:16.1.3")
+    implementation("com.facebook.android:facebook-login:16.1.3")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("androidx.paging:paging-runtime:3.3.6")
     implementation("androidx.paging:paging-compose:3.3.6")

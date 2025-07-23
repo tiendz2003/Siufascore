@@ -5,11 +5,13 @@ import com.jerry.ronaldo.siufascore.data.repository.AuthRepositoryImpl
 import com.jerry.ronaldo.siufascore.data.repository.FavoriteTeamsRepositoryImpl
 import com.jerry.ronaldo.siufascore.data.repository.FootballRepositoryImpl
 import com.jerry.ronaldo.siufascore.data.repository.HighlightRepositoryImpl
+import com.jerry.ronaldo.siufascore.data.repository.LiveStreamRepositoryImpl
 import com.jerry.ronaldo.siufascore.data.repository.NewsRepositoryImpl
 import com.jerry.ronaldo.siufascore.data.repository.SearchRepositoryImpl
 import com.jerry.ronaldo.siufascore.domain.repository.FavoriteTeamsRepository
 import com.jerry.ronaldo.siufascore.domain.repository.FootballRepository
 import com.jerry.ronaldo.siufascore.domain.repository.HighlightRepository
+import com.jerry.ronaldo.siufascore.domain.repository.LiveStreamRepository
 import com.jerry.ronaldo.siufascore.domain.repository.NewsRepository
 import com.jerry.ronaldo.siufascore.domain.repository.SearchRepository
 import com.jerry.ronaldo.siufascore.utils.ConnectivityManagerNetworkMonitor
@@ -64,4 +66,9 @@ abstract class RepositoryModule {
     abstract fun bindFavoriteTeamsRepository(
         favoriteTeamsRepositoryImpl: FavoriteTeamsRepositoryImpl
     ): FavoriteTeamsRepository
+    @Binds
+    @Singleton
+    abstract fun bindLiveStreamRepository(
+        liveStreamRepositoryImpl: LiveStreamRepositoryImpl
+    ): LiveStreamRepository
 }

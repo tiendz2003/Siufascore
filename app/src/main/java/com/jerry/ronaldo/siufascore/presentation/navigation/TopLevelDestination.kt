@@ -2,10 +2,12 @@ package com.jerry.ronaldo.siufascore.presentation.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LiveTv
 import androidx.compose.material.icons.outlined.Newspaper
@@ -29,6 +31,13 @@ enum class TopLevelDestination(
         titleTextId = R.string.home,
         route = HomeRoute::class,
         baseRoute = HomeBaseRoute::class,
+    ),
+    FAVORITE(
+        selectedIcon = Icons.Default.Favorite,
+        unselectedIcon = Icons.Outlined.Favorite,
+        iconTextId = R.string.favorite,
+        titleTextId = R.string.favorite,
+        route = FavoriteRoute::class,
     ),
     HIGHLIGHT(
         selectedIcon = Icons.Default.Tv,

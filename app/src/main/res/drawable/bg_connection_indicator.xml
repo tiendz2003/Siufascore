@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- State for different connection status -->
+
+    <!-- Live/Connected state -->
+    <item android:state_selected="true">
+        <shape android:shape="oval">
+            <solid android:color="#4CAF50" />
+            <!-- Green for live/connected -->
+        </shape>
+    </item>
+
+    <!-- Buffering/Loading state -->
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="#FF9800" />
+            <!-- Orange for buffering -->
+        </shape>
+    </item>
+
+    <!-- Error/Disconnected state -->
+    <item android:state_enabled="false">
+        <shape android:shape="oval">
+            <solid android:color="#F44336" />
+            <!-- Red for error/disconnected -->
+        </shape>
+    </item>
+
+    <!-- Default state -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#9E9E9E" />
+            <!-- Gray for default/unknown -->
+        </shape>
+    </item>
+
+</selector>
