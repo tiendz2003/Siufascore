@@ -63,9 +63,6 @@ class LiveStreamPlayerActivity : AppCompatActivity() {
     }
 
 
-
-
-
     private fun setMatchId(matchId: Int) {
         ivsViewModel.sendIntent(IVSPlayerIntent.SetMatchId(matchId))
     }

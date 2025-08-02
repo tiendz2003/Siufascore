@@ -28,8 +28,6 @@ data class IVSPlayerViewUiState(
     val lastCommentKey: String? = null,
     val availableQualities: List<StreamQuality> = emptyList(),
     val currentQuality: StreamQuality? = null,
-    val canEnterPiP: Boolean = false  ,
-    val isInPiPMode: Boolean = false,
 ):ViewState
 
 sealed class IVSPlayerIntent:Intent {

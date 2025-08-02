@@ -281,7 +281,7 @@ fun HighLightDetailScreen(
                 onDismiss = {
                     viewModel.sendIntent(DetailHighLightIntent.ToggleComments)
                 },
-                modifier = Modifier.fillMaxHeight(0.72f)
+                modifier = Modifier.fillMaxHeight(0.75f)
             )
         }
     }

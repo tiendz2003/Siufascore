@@ -2,9 +2,13 @@ package com.jerry.ronaldo.siufascore.presentation.player
 
 import androidx.lifecycle.viewModelScope
 import com.jerry.ronaldo.siufascore.base.BaseViewModel
+import com.jerry.ronaldo.siufascore.data.model.FavoritePlayer
 import com.jerry.ronaldo.siufascore.domain.model.PlayerOverview
 import com.jerry.ronaldo.siufascore.domain.model.PlayerTeam
 import com.jerry.ronaldo.siufascore.domain.model.PlayerTrophy
+import com.jerry.ronaldo.siufascore.domain.usecase.favortite.AddFavoritePlayerUseCase
+import com.jerry.ronaldo.siufascore.domain.usecase.favortite.ObserveFavoritePlayersUseCase
+import com.jerry.ronaldo.siufascore.domain.usecase.favortite.RemoveFavoritePlayerUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.football.GetDetailPlayerUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.football.GetPlayerOverviewUseCase
 import com.jerry.ronaldo.siufascore.utils.Resource
@@ -14,110 +18,38 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @HiltViewModel(assistedFactory = DetailPlayerViewModel.Factory::class)
 class DetailPlayerViewModel @AssistedInject constructor(
     @Assisted private val playerId: Int,
     private val getDetailPlayerUseCase: GetDetailPlayerUseCase,
-    private val getPlayerOverviewUseCase: GetPlayerOverviewUseCase
+    private val getPlayerOverviewUseCase: GetPlayerOverviewUseCase,
+    private val addFavoritePlayer: AddFavoritePlayerUseCase,
+    private val removeFavoritePlayer: RemoveFavoritePlayerUseCase,
+    private val observeFavoritePlayerUseCase: ObserveFavoritePlayersUseCase,
 ) :
     BaseViewModel<DetailPlayerIntent, DetailPlayerUiState, DetailPlayerEffect>() {
-    private val _selectedTab = MutableStateFlow(PlayerDetailTab.OVERVIEW)
-    private val _refreshTrigger = MutableStateFlow(Unit)
-    private val _currentSeason = MutableStateFlow(getCurrentSeason())
-    private val _availableSeasons = MutableStateFlow(getAvailableSeasons())
-    private val _isFollowing = MutableStateFlow(false)
-    private val _playerId = MutableStateFlow<Int>(playerId)
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val playerStats = combine(
-        _refreshTrigger,
-        _currentSeason,
-        _playerId
-    ) { _, season, playerId ->
-        Pair(
-            season,
-            playerId
+    private val _uiState = MutableStateFlow(
+        DetailPlayerUiState(
+            isStatLoading = true,
+            currentSeason = getCurrentSeason(),
+            availableSeasons = getAvailableSeasons()
         )
-    }.distinctUntilChanged().flatMapLatest { (season, playerId) ->
-        getDetailPlayerUseCase(playerId, season)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Loading)
+    )
+    override val uiState: StateFlow<DetailPlayerUiState> = _uiState.asStateFlow()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val playerOverview = combine(
-        _refreshTrigger,
-        _playerId
-    ) { _, playerId ->
-        playerId
-    }.distinctUntilChanged().flatMapLatest {
-        getPlayerOverviewUseCase(it)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Loading)
-
-    private val basicState = combine(
-        _selectedTab,
-        _isFollowing
-    ) { selectedTab, isFollowing ->
-        Pair(selectedTab, isFollowing)
+    init {
+        loadInitialData()
+        observeFavoriteStatus()
     }
-
-    private val playerStatsState = playerStats.map { statsResult ->
-        val statsList = if (statsResult is Resource.Success) statsResult.data else null
-        val teamsError =
-            if (statsResult is Resource.Error) statsResult.exception.message else null
-        val isLoadingTeams = statsResult is Resource.Loading
-        Triple(statsList, isLoadingTeams, teamsError)
-    }
-    private val playerOverviewState = playerOverview.map { overviewResult ->
-        val overview = if (overviewResult is Resource.Success) overviewResult.data else null
-        val overviewError =
-            if (overviewResult is Resource.Error) overviewResult.exception.message else null
-        val isLoadingOverview = overviewResult is Resource.Loading
-        Triple(overview, isLoadingOverview, overviewError)
-    }
-
-    override val uiState: StateFlow<DetailPlayerUiState>
-        get() = combine(
-            basicState,
-            playerStatsState,
-            playerOverviewState,
-            _currentSeason,
-            _availableSeasons
-        ) { basic, stats, overview, season, availableSeasons ->
-            val (selectedTab, isFollowing) = basic
-            val (playerStats, isStatLoading, statError) = stats
-            val (playerOverview, isOverviewLoading, overviewError) = overview
-            DetailPlayerUiState(
-                isStatLoading = isStatLoading,
-                statError = statError,
-                playerStat = playerStats,
-                selectedTab = selectedTab,
-                isFollowing = isFollowing,
-                currentSeason = season,
-                availableSeasons = availableSeasons,
-                hasData = playerStats != null && playerOverview != null,
-                isOverviewLoading = isOverviewLoading,
-                overviewError = overviewError,
-                playerOverview = playerOverview?.let {
-                    createTimelineItems(it)
-                },
-            )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = DetailPlayerUiState(isStatLoading = true)
-        )
 
     override suspend fun processIntent(intent: DetailPlayerIntent) {
         when (intent) {
@@ -138,48 +70,219 @@ class DetailPlayerViewModel @AssistedInject constructor(
             }
 
             is DetailPlayerIntent.SelectTab -> {
-                selectedTab(intent.tab)
+                selectTab(intent.tab)
             }
 
-            DetailPlayerIntent.ToggleFollow -> {
-
+            DetailPlayerIntent.ToggleFollowPlayer -> {
+                toggleFollow()
             }
         }
     }
 
-    private fun refreshPlayerData() {
-        viewModelScope.launch {
-            sendEvent(DetailPlayerEffect.ShowRefreshIndicator)
-            delay(300)
-            _refreshTrigger.value = Unit
+    private fun updateState(newState: (DetailPlayerUiState) -> DetailPlayerUiState) {
+        _uiState.update { state ->
+            newState(state)
         }
     }
 
-    private fun selectedTab(tab: PlayerDetailTab) {
-        _selectedTab.value = tab
+    private fun loadInitialData() {
+        viewModelScope.launch {
+            loadPlayerData()
+            loadPlayerOverview()
+        }
     }
 
-    private fun toggleFollow() {
-        val newFollowState = !_isFollowing.value
-        _isFollowing.value = newFollowState
-
+    private fun loadPlayerData() {
         viewModelScope.launch {
-            sendEvent(
-                if (newFollowState) {
-                    DetailPlayerEffect.ShowFollowSuccess
-                } else {
-                    DetailPlayerEffect.ShowUnfollowSuccess
-                }
+            _uiState.value = _uiState.value.copy(
+                isStatLoading = true,
+                statError = null
             )
+
+            try {
+                getDetailPlayerUseCase(playerId, _uiState.value.currentSeason).collect { result ->
+                    when (result) {
+                        is Resource.Success -> {
+                            Timber.d("Player data loaded successfully: ${result.data.player.displayName}")
+                            _uiState.value = _uiState.value.copy(
+                                isStatLoading = false,
+                                playerStat = result.data,
+                                statError = null,
+                                hasData = _uiState.value.playerOverview != null
+                            )
+                        }
+
+                        is Resource.Error -> {
+                            Timber.e("Failed to load player data: ${result.exception.message}")
+                            _uiState.value = _uiState.value.copy(
+                                isStatLoading = false,
+                                statError = result.exception.message
+                            )
+                        }
+
+                        is Resource.Loading -> {
+                            _uiState.value = _uiState.value.copy(isStatLoading = true)
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+                Timber.e(e, "Exception while loading player data")
+                _uiState.value = _uiState.value.copy(
+                    isStatLoading = false,
+                    statError = e.message ?: "Unknown error"
+                )
+            }
         }
+    }
+
+    private fun loadPlayerOverview() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isOverviewLoading = true,
+                overviewError = null
+            )
+
+            try {
+                getPlayerOverviewUseCase(playerId).collect { result ->
+                    when (result) {
+                        is Resource.Success -> {
+                            val timelineItems = result.data.let { createTimelineItems(it) }
+                            _uiState.value = _uiState.value.copy(
+                                isOverviewLoading = false,
+                                playerOverview = timelineItems,
+                                overviewError = null,
+                                hasData = _uiState.value.playerStat != null
+                            )
+                        }
+
+                        is Resource.Error -> {
+                            _uiState.value = _uiState.value.copy(
+                                isOverviewLoading = false,
+                                overviewError = result.exception.message
+                            )
+                        }
+
+                        is Resource.Loading -> {
+                            _uiState.value = _uiState.value.copy(isOverviewLoading = true)
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isOverviewLoading = false,
+                    overviewError = e.message ?: "Unknown error"
+                )
+            }
+        }
+    }
+
+    private fun observeFavoriteStatus() {
+        viewModelScope.launch {
+            observeFavoritePlayerUseCase().collect { favoritePlayersResult ->
+                when (favoritePlayersResult) {
+                    is Resource.Success -> {
+                        val isFavorite = favoritePlayersResult.data.any {
+                            it.playerId == playerId.toString()
+                        }
+
+                        _uiState.value = _uiState.value.copy(isFavoritePlayer = isFavorite)
+                        Timber.d("Favorite status updated: $isFavorite")
+                    }
+
+                    is Resource.Error -> {
+                        Timber.e("Error observing favorite status: ${favoritePlayersResult.exception.message}")
+                        _uiState.value = _uiState.value.copy(isFavoritePlayer = false)
+                    }
+
+                    is Resource.Loading -> {
+                        // Keep current state during loading
+                    }
+                }
+            }
+        }
+    }
+
+    private fun selectTab(tab: PlayerDetailTab) {
+        updateState {
+            it.copy(selectedTab = tab)
+        }
+    }
+
+    private suspend fun toggleFollow() {
+
+        val currentState = _uiState.value
+
+        // Detailed logging for debugging
+        Timber.d("=== ToggleFollow Debug ===")
+        Timber.d("Current isAddingFavorite: ${currentState.isAddingFavorite}")
+        Timber.d("Player data is null: ${currentState.playerStat == null}")
+        Timber.d("Current isFavoritePlayer: ${currentState.isFavoritePlayer}")
+
+        if (currentState.playerStat == null) {
+            Timber.w("Cannot toggle follow - player data is null")
+            sendEvent(DetailPlayerEffect.ShowMessage("Dữ liệu chưa được tải, vui lòng thử lại"))
+            return
+        }
+
+        if (currentState.isAddingFavorite) {
+            Timber.d("Already processing favorite toggle, ignoring")
+            return
+        }
+
+        val playerData = currentState.playerStat
+        Timber.d("Processing toggle for player: ${playerData.player.displayName}")
+
+        // Set loading state
+        _uiState.value = _uiState.value.copy(isAddingFavorite = true)
+
+        try {
+            val result = if (currentState.isFavoritePlayer) {
+                Timber.d("Removing from favorites")
+                removeFavoritePlayer(playerData.player.id.toString())
+            } else {
+                Timber.d("Adding to favorites")
+                addFavoritePlayer(
+                    player = FavoritePlayer(
+                        playerId = playerData.player.id.toString(),
+                        playerName = playerData.player.displayName,
+                        playerPhoto = playerData.player.photoUrl,
+                        playerNationality = playerData.player.nationality ?: "",
+                        playerPosition = playerData.currentSeasonStats?.position ?: ""
+                    )
+                )
+            }
+
+            result.onSuccess {
+                Timber.d("Toggle favorite operation completed successfully")
+                val successMessage = if (currentState.isFavoritePlayer) {
+                    "Đã bỏ theo dõi ${playerData.player.displayName}"
+                } else {
+                    "Đã theo dõi ${playerData.player.displayName}"
+                }
+                sendEvent(DetailPlayerEffect.ShowMessage(successMessage))
+            }.onFailure { error ->
+                Timber.e(error, "Failed to toggle favorite")
+                sendEvent(DetailPlayerEffect.ShowMessage("Lỗi: ${error.message ?: "Không rõ"}"))
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Exception during toggle favorite")
+            sendEvent(DetailPlayerEffect.ShowMessage("Lỗi: ${e.message ?: "Không rõ"}"))
+        } finally {
+            // Reset loading state
+            _uiState.value = _uiState.value.copy(isAddingFavorite = false)
+        }
+
     }
 
     private fun changeSeason(season: Int) {
-        if (season != _currentSeason.value && season > 2000) {
-            _currentSeason.value = season
+        if (season != _uiState.value.currentSeason && season > 2000) {
+            _uiState.value = _uiState.value.copy(currentSeason = season)
+            loadPlayerData() // Reload data for new season
 
             viewModelScope.launch {
-                sendEvent(DetailPlayerEffect.ShowMessage("Đang tải dữ liệu..."))
+                sendEvent(DetailPlayerEffect.ShowMessage("Đang tải dữ liệu mùa giải $season..."))
             }
         }
     }

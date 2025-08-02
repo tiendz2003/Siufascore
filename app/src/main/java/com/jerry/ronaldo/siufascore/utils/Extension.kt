@@ -44,15 +44,29 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 
 fun String.formatDisplayDate(): String {
-    val inputFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
-    val outputFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault())
+    return try {
+        // ✅ THAY ĐỔI Ở ĐÂY: Sửa định dạng để chỉ cần năm-tháng-ngày
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-    val date = inputFormat.parse(this) ?: return this
-    return outputFormat.format(date)
+        // Vì chuỗi đầu vào không có thông tin về giờ, việc set timezone ở đây
+        // sẽ coi như ngày bắt đầu vào lúc 00:00:00 UTC
+        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+        // Output format vẫn giữ nguyên
+        val outputFormat = SimpleDateFormat("EEEE dd 'tháng' M 'năm' yyyy", Locale("vi", "VN"))
+        outputFormat.timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
+
+        // Giờ đây câu lệnh parse sẽ thành công
+        val date = inputFormat.parse(this) ?: return this
+        outputFormat.format(date)
+    } catch (e: Exception) {
+        this // Trả về chuỗi gốc nếu có lỗi
+    }
 }
 
 fun String?.extractRoundNumber(): String {
@@ -280,7 +294,7 @@ fun String?.extractDescription(): String? {
 
 fun getCurrentSeason(): Int {
     val currentDate = LocalDate.now()
-    return if (currentDate.month.value >= Month.AUGUST.value) {
+    return if (currentDate.month.value >= Month.SEPTEMBER.value) {
         currentDate.year
     } else {
         currentDate.year - 1

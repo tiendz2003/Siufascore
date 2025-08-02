@@ -152,7 +152,7 @@ class FootballRepositoryImpl @Inject constructor(
             }
         }.flowOn(ioDispatcher)
 
-    override suspend fun getDetailTeamInfo(
+    override suspend fun getTeamStatistics(
         teamId: Int,
         leagueId:Int,
         season: Int
@@ -160,7 +160,7 @@ class FootballRepositoryImpl @Inject constructor(
         return flow {
             emit(Resource.Loading)
             try {
-                val response = apiService.getDetailTeamInfo(
+                val response = apiService.getTeamStatistics(
                     leagueId = leagueId,
                     teamId = teamId,
                     season = season
@@ -172,6 +172,7 @@ class FootballRepositoryImpl @Inject constructor(
             }
         }.flowOn(ioDispatcher)
     }
+
 
 }
 

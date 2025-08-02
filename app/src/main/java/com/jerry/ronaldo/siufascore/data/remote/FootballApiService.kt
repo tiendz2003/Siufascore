@@ -94,9 +94,11 @@ interface FootballApiService {
     ): PlayerDetailResponse
 
     @GET("teams/statistics")
-    suspend fun getDetailTeamInfo(
+    suspend fun getTeamStatistics(
         @Query("league") leagueId: Int,
         @Query("team") teamId: Int,
         @Query("season") season: Int
     ): TeamDetailResponse
+
+
 }

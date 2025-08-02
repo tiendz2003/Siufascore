@@ -57,7 +57,7 @@ import com.jerry.ronaldo.siufascore.presentation.search.screen.PerformanceStatCo
 import com.jerry.ronaldo.siufascore.presentation.search.screen.StatColumn
 
 @Composable
-fun OverviewSection(uiState: DetailPlayerUiState) {
+fun OverviewPlayerSection(uiState: DetailPlayerUiState) {
     Column(
         modifier = Modifier
             .fillMaxSize()

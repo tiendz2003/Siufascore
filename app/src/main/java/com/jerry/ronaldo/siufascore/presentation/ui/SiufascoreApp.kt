@@ -74,7 +74,6 @@ fun SiufascoreApp(
             SiufaScoreApp(
                 appState = appState,
                 snackbarHostState = snackBarHostState,
-                onTopAppBarActionClick = { },
                 modifier = modifier,
                 windowAdaptiveInfo = windowAdaptiveInfo
             )
@@ -86,7 +85,6 @@ fun SiufascoreApp(
 fun SiufaScoreApp(
     appState: AppState,
     snackbarHostState: SnackbarHostState,
-    onTopAppBarActionClick: () -> Unit,
     modifier: Modifier = Modifier,
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
 ) {
@@ -134,7 +132,6 @@ fun SiufaScoreApp(
             AppScaffoldContent(
                 appState = appState,
                 snackbarHostState = snackbarHostState,
-                onTopAppBarActionClick = onTopAppBarActionClick,
                 shouldShowTopAppBar = shouldShowTopAppBar,
                 modifier = modifier
             )
@@ -144,7 +141,6 @@ fun SiufaScoreApp(
         AppScaffoldContent(
             appState = appState,
             snackbarHostState = snackbarHostState,
-            onTopAppBarActionClick = onTopAppBarActionClick,
             shouldShowTopAppBar = shouldShowTopAppBar,
             modifier = modifier
         )
@@ -156,7 +152,6 @@ fun SiufaScoreApp(
 private fun AppScaffoldContent(
     appState: AppState,
     snackbarHostState: SnackbarHostState,
-    onTopAppBarActionClick: () -> Unit,
     shouldShowTopAppBar: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -197,7 +192,7 @@ private fun AppScaffoldContent(
                         },
                         modifier = modifier,
                         onActionClick = {
-                            onTopAppBarActionClick()
+                            appState.navigateToSetting()
                         }
                     )
                 }

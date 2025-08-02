@@ -154,14 +154,14 @@ data class MatchStatistics(
     fun getComparisonStats(): List<StatComparison> {
         return listOf(
             StatComparison(
-                label = "Ball Possession",
+                label = "Kiểm soát bóng",
                 homeValue = homeTeamStats.ballPossession ?: "0%",
                 awayValue = awayTeamStats.ballPossession ?: "0%",
                 homeProgress = homeTeamStats.possessionPercentage ?: 0f,
                 awayProgress = awayTeamStats.possessionPercentage ?: 0f
             ),
             StatComparison(
-                label = "Total Shots",
+                label = "Tổng cú sút",
                 homeValue = homeTeamStats.shotsTotal?.toString() ?: "0",
                 awayValue = awayTeamStats.shotsTotal?.toString() ?: "0",
                 homeProgress = compareValues(
@@ -176,7 +176,7 @@ data class MatchStatistics(
                 )
             ),
             StatComparison(
-                label = "Shots on Goal",
+                label = "Sút trúng đích",
                 homeValue = homeTeamStats.shotsOnGoal?.toString() ?: "0",
                 awayValue = awayTeamStats.shotsOnGoal?.toString() ?: "0",
                 homeProgress = compareValues(
@@ -191,21 +191,21 @@ data class MatchStatistics(
                 )
             ),
             StatComparison(
-                label = "Pass Accuracy",
+                label = "Tỉ lệ chuyền",
                 homeValue = homeTeamStats.passAccuracy ?: "0%",
                 awayValue = awayTeamStats.passAccuracy ?: "0%",
                 homeProgress = homeTeamStats.passAccuracyPercentage ?: 0f,
                 awayProgress = awayTeamStats.passAccuracyPercentage ?: 0f
             ),
             StatComparison(
-                label = "Fouls",
+                label = "Lỗi",
                 homeValue = homeTeamStats.fouls?.toString() ?: "0",
                 awayValue = awayTeamStats.fouls?.toString() ?: "0",
                 homeProgress = compareValues(homeTeamStats.fouls, awayTeamStats.fouls, false),
                 awayProgress = compareValues(awayTeamStats.fouls, homeTeamStats.fouls, false)
             ),
             StatComparison(
-                label = "Corner Kicks",
+                label = "Phạt góc",
                 homeValue = homeTeamStats.cornerKicks?.toString() ?: "0",
                 awayValue = awayTeamStats.cornerKicks?.toString() ?: "0",
                 homeProgress = compareValues(

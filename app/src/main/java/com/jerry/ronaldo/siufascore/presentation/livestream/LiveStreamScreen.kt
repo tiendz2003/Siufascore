@@ -139,8 +139,40 @@ fun MatchCard(
                 contentDescription = "Match Logo",
                 modifier = Modifier
                     .fillMaxSize()
-
             )
+
+            // TODO:KIỂM TRA STATUS TRẬN ĐẤU ĐỂ HIỂN THỊ ISLIVE
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp)
+                    .background(
+                        color = Color.Red,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(4.dp)
+                            .background(
+                                color = Color.White,
+                                shape = CircleShape
+                            )
+                    )
+                    Text(
+                        text = "LIVE",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -162,7 +194,6 @@ fun MatchCard(
         }
     }
 }
-
 @Composable
 private fun LeagueHeader(
     leagueName: String,
@@ -252,6 +283,7 @@ private fun TeamLiveSection(
             text = team.name,
             color = Color.White,
             fontSize = 14.sp,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center
         )

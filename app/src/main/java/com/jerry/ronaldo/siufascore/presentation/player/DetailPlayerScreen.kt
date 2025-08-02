@@ -102,7 +102,10 @@ fun DetailPlayerScreen(
                 playerName = uiState.playerName,
                 playerTeam = uiState.teamName,
                 playerPosition = uiState.position,
-                isFavorite = true,
+                isFavorite = uiState.isFavoritePlayer,
+                onToggleFollow = {
+                    viewModel.sendIntent(DetailPlayerIntent.ToggleFollowPlayer)
+                },
                 onBackClick = { onBackClick() },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -171,7 +174,7 @@ fun DetailPlayerScreen(
             ) { index ->
                 when (tabs[index]) {
                     PlayerDetailTab.OVERVIEW -> {
-                        OverviewSection(
+                        OverviewPlayerSection(
                             uiState = uiState
                         )
                     }

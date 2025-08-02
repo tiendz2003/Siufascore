@@ -272,7 +272,7 @@ fun SignUpScreen(
 
             // Social Sign Up Buttons (giữ tương tự login, adjust nếu cần)
             SocialLoginButton(
-                iconRes = R.drawable.premier_league,  // Giả định icons cho Google
+                iconRes = R.drawable.ic_gg,  // Giả định icons cho Google
                 text = "Đăng ký với Google",
                 onClick = {
                     // Handle Google sign up (nếu hỗ trợ, gọi tương ứng trong ViewModel)
@@ -283,7 +283,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             SocialLoginButton(
-                iconRes = R.drawable.premier_league,  // Giả định icons cho Facebook
+                iconRes = R.drawable.ic_fb,  // Giả định icons cho Facebook
                 text = "Đăng ký với Facebook",
                 onClick = { /* Handle FB sign up */ }
             )

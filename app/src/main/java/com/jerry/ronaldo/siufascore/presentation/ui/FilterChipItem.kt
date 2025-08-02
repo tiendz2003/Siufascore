@@ -58,6 +58,7 @@ fun FilterChipItem(
                     {
                         Icon(
                             imageVector = Icons.Default.Check,
+                            tint = Color.White,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )

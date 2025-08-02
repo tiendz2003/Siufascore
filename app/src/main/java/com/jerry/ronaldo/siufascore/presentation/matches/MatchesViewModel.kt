@@ -84,7 +84,7 @@ class MatchesViewModel @Inject constructor(
         initialValue = Resource.Loading
     )
 
-     /* // Standings flow - depends on league info
+      // Standings flow - depends on league info
       @OptIn(ExperimentalCoroutinesApi::class)
       private val standingsFlow = combine(
           _competitionId,
@@ -97,7 +97,7 @@ class MatchesViewModel @Inject constructor(
           scope = viewModelScope,
           started = SharingStarted.WhileSubscribed(5_000),
           initialValue = Resource.Loading
-      )*/
+      )
 
     // Combined UI state
     override val uiState: StateFlow<MatchesState> = combine(
@@ -105,8 +105,8 @@ class MatchesViewModel @Inject constructor(
         currentMatchdayFlow,
         leagueInfoFlow,
          matchesFlow,
-      //  standingsFlow
-    ) { competitionId,currentMatchday, leagueInfo,matches ->
+        standingsFlow
+    ) { competitionId,currentMatchday, leagueInfo,matches,standings ->
         MatchesState(
             competitionId = competitionId,
             competionInfo = (leagueInfo as? Resource.Success)?.data,
@@ -116,9 +116,9 @@ class MatchesViewModel @Inject constructor(
             matches = (matches as? Resource.Success)?.data ?: emptyList(),
             isMatchesLoading = matches is Resource.Loading,
             matchesError = (matches as? Resource.Error)?.exception?.message,
-           /* standings = (standings as? Resource.Success)?.data ?: emptyList(),
+            standings = (standings as? Resource.Success)?.data ?: emptyList(),
             isStandingsLoading = standings is Resource.Loading,
-            standingError = (standings as? Resource.Error)?.exception?.message,*/
+            standingError = (standings as? Resource.Error)?.exception?.message,
             availableMatchday = (1..38).toList()
         )
     }.stateIn(

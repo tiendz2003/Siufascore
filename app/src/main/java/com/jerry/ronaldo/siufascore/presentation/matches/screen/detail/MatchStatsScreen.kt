@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jerry.ronaldo.siufascore.domain.model.MatchStatistics
 import com.jerry.ronaldo.siufascore.domain.model.StatComparison
 
@@ -78,7 +79,7 @@ fun MatchStatsScreen(
 
 
         Text(
-            text = "Match Statistics",
+            text = "Thống kê trận đấu",
             style = MaterialTheme.typography.titleLarge,
             color = Color.Black,
             fontWeight = FontWeight.Bold,
@@ -116,7 +117,7 @@ private fun TeamHeaders(
         ) {
             Text(
                 text = homeTeamName,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 color = Color(0xFF6366F1),
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -137,7 +138,9 @@ private fun TeamHeaders(
         ) {
             Text(
                 text = awayTeamName,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 20.sp
+                ),
                 color = Color(0xFF10B981),
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -167,8 +170,10 @@ fun PossessionSection(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Ball Possession",
-                style = MaterialTheme.typography.titleMedium,
+                text = "Kiểm soát bóng",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 18.sp
+                ),
                 color = Color.Black,
                 fontWeight = FontWeight.Bold
             )
@@ -208,7 +213,9 @@ fun PossessionSection(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = awayTeamName,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 18.sp
+                        ),
                         color = Color(0xFF10B981),
                         fontWeight = FontWeight.Medium
                     )
@@ -258,7 +265,9 @@ fun PossessionCircle(
         }
         Text(
             text = "$percentage%",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 20.sp
+            ),
             color = color,
             fontWeight = FontWeight.Bold
         )
@@ -285,7 +294,9 @@ fun StatRow(
             // Stat label
             Text(
                 text = stat.label,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 16.sp
+                ),
                 color = Color.Black,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -412,8 +423,10 @@ private fun DetailedStatsSection(statistics: MatchStatistics) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Additional Statistics",
-                style = MaterialTheme.typography.titleMedium,
+                text = "Thống kê bổ sung",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 16.sp
+                ),
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
@@ -423,55 +436,55 @@ private fun DetailedStatsSection(statistics: MatchStatistics) {
             val awayStats = statistics.awayTeamStats
 
             DetailedStatRow(
-                label = "Shots Blocked",
+                label = "Cú sút bị chặn",
                 homeValue = homeStats.shotsBlocked?.toString() ?: "0",
                 awayValue = awayStats.shotsBlocked?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Shots Inside Box",
+                label = "Dứt điểm trong vòng cấm",
                 homeValue = homeStats.shotsInsideBox?.toString() ?: "0",
                 awayValue = awayStats.shotsInsideBox?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Shots Outside Box",
+                label = "Dứt điểm ngoài vòng cấm",
                 homeValue = homeStats.shotsOutsideBox?.toString() ?: "0",
                 awayValue = awayStats.shotsOutsideBox?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Offsides",
+                label = "Việt vị",
                 homeValue = homeStats.offsides?.toString() ?: "0",
                 awayValue = awayStats.offsides?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Yellow Cards",
+                label = "Thẻ vàng",
                 homeValue = homeStats.yellowCards?.toString() ?: "0",
                 awayValue = awayStats.yellowCards?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Red Cards",
+                label = "Thẻ đỏ",
                 homeValue = homeStats.redCards?.toString() ?: "0",
                 awayValue = awayStats.redCards?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Goalkeeper Saves",
+                label = "Cứu thua",
                 homeValue = homeStats.goalkeeperSaves?.toString() ?: "0",
                 awayValue = awayStats.goalkeeperSaves?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Total Passes",
+                label = "Tổng đường chuyền",
                 homeValue = homeStats.totalPasses?.toString() ?: "0",
                 awayValue = awayStats.totalPasses?.toString() ?: "0"
             )
 
             DetailedStatRow(
-                label = "Accurate Passes",
+                label = "Chuyền thành công",
                 homeValue = homeStats.passesAccurate?.toString() ?: "0",
                 awayValue = awayStats.passesAccurate?.toString() ?: "0"
             )
@@ -492,7 +505,7 @@ private fun DetailedStatRow(
     ) {
         Text(
             text = homeValue,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Medium,
             color = Color(0xFF6366F1),
             modifier = Modifier.width(40.dp),
@@ -536,12 +549,12 @@ private fun NoStatsAvailable(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No Statistics Available",
+                text = "Chưa có thống kê",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray
             )
             Text(
-                text = "Statistics will be available during or after the match",
+                text = "Thống kê sẽ được cập nhật sau khi trận đấu kết thúc",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
                 textAlign = TextAlign.Center

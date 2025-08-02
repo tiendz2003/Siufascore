@@ -416,7 +416,7 @@ private fun PlayersResultsHeader(
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
@@ -440,8 +440,9 @@ private fun PlayersResultsHeader(
 
                     Text(
                         text = resultsInfo,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
                         ),
                         color = MaterialTheme.colorScheme.onSurface
                     )

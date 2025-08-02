@@ -2,13 +2,15 @@ package com.jerry.ronaldo.siufascore.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.jerry.ronaldo.siufascore.data.model.FavoritePlayer
 import com.jerry.ronaldo.siufascore.data.model.FavoriteTeam
 import com.jerry.ronaldo.siufascore.data.source.FirebaseAuthDataSource
 import com.jerry.ronaldo.siufascore.domain.model.LeagueInfo
 import com.jerry.ronaldo.siufascore.domain.model.TeamInfo
-import com.jerry.ronaldo.siufascore.domain.repository.FavoriteTeamsRepository
-import com.jerry.ronaldo.siufascore.utils.FavoriteTeamException
+import com.jerry.ronaldo.siufascore.domain.repository.FavoriteRepository
+import com.jerry.ronaldo.siufascore.utils.FavoriteException
 import com.jerry.ronaldo.siufascore.utils.IODispatcher
+import com.jerry.ronaldo.siufascore.utils.Resource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -23,11 +25,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FavoriteTeamsRepositoryImpl @Inject constructor(
+class FavoriteRepositoryImpl @Inject constructor(
     private val firebaseDataSource: FirebaseAuthDataSource,
     private val firestore: FirebaseFirestore,
-    @IODispatcher private val ioDispatcher:CoroutineDispatcher
-) : FavoriteTeamsRepository {
+    @IODispatcher private val ioDispatcher: CoroutineDispatcher
+) : FavoriteRepository {
     companion object {
         private const val COLLECTION_FAVORITE_TEAMS = "favorite_teams"
         private const val COLLECTION_FAVORITE_PLAYERS = "favorite_players"
@@ -50,7 +52,7 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
                 .get()
                 .await()
             if (existingDoc.exists()) {
-                throw FavoriteTeamException.TeamAlreadyFavorite
+                throw FavoriteException.TeamAlreadyFavorite
             }
             val favoriteTeam = FavoriteTeam(
                 addedTimestamp = System.currentTimeMillis(),
@@ -76,22 +78,12 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
             // Xóa document
             val document = docRef.get().await()
             if (!document.exists()) {
-                throw FavoriteTeamException.TeamNotFound
+                throw FavoriteException.TeamNotFound
             }
             docRef.delete().await()
         }
     }
 
-    override suspend fun getFavoriteTeams(): Result<List<FavoriteTeam>> {
-        return executedWithUserCheck { userId ->
-            val snapshot = firestore.collection(COLLECTION_FAVORITE_TEAMS)
-                .whereEqualTo(FIELD_USER_ID, userId)
-                .orderBy(FIELD_ADDED_TIMESTAMP, Query.Direction.DESCENDING)
-                .get()
-                .await()
-            snapshot.toObjects(FavoriteTeam::class.java)
-        }
-    }
     override suspend fun toggleNotification(teamId: Int, isEnabled: Boolean): Result<Unit> {
         return executedWithUserCheck { userId ->
             Timber.tag("FavoriteTeamsRepositoryImpl")
@@ -103,7 +95,7 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
             // Kiểm tra document tồn tại
             val document = docRef.get().await()
             if (!document.exists()) {
-                throw FavoriteTeamException.TeamNotFound
+                throw FavoriteException.TeamNotFound
             }
 
             // Update chỉ field isEnableNotification
@@ -114,6 +106,7 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
                 .d("Successfully updated notification status for team $teamId")
         }
     }
+
     override suspend fun isFavoriteTeam(teamId: Int): Result<Boolean> {
         return try {
             val userId = currentUserId.firstOrNull()
@@ -162,16 +155,146 @@ class FavoriteTeamsRepositoryImpl @Inject constructor(
         emit(emptyList())
     }.flowOn(ioDispatcher)
 
+    override suspend fun addFavoritePlayer(player: FavoritePlayer): Result<Unit> {
+        return executedWithUserCheck { userId ->
+            Timber.tag("FavoriteRepositoryImpl").d("Adding favorite player: ${player.playerName}")
+
+            val documentId = "${userId}_${player.playerId}"
+            val docRef = firestore.collection(COLLECTION_FAVORITE_PLAYERS).document(documentId)
+
+            // Check if player is already in favorites
+            val existingDoc = docRef.get().await()
+            if (existingDoc.exists()) {
+                throw FavoriteException.PlayerAlreadyFavorite
+            }
+
+            // Create favorite player with user info
+            val favoritePlayer = player.copy(
+                userId = userId,
+                addedTimestamp = System.currentTimeMillis(),
+                enableNotification = false
+            )
+
+            // Save to Firestore
+            docRef.set(favoritePlayer).await()
+
+            Timber.tag("FavoriteRepositoryImpl")
+                .d("Successfully added favorite player: ${player.playerName}")
+        }
+    }
+
+    override suspend fun removeFavoritePlayer(playerId: String): Result<Unit> {
+        return executedWithUserCheck { userId ->
+            Timber.tag("FavoriteRepositoryImpl").d("Removing favorite player: $playerId")
+
+            val documentId = "${userId}_${playerId}"
+            val docRef = firestore.collection(COLLECTION_FAVORITE_PLAYERS).document(documentId)
+
+            // Check if document exists
+            val document = docRef.get().await()
+            if (!document.exists()) {
+                throw FavoriteException.PlayerNotFound
+            }
+
+            // Delete document
+            docRef.delete().await()
+
+            Timber.tag("FavoriteRepositoryImpl")
+                .d("Successfully removed favorite player: $playerId")
+        }
+    }
+
+    override suspend fun isFavoritePlayer(playerId: String): Result<Boolean> {
+        return try {
+            val userId = currentUserId.firstOrNull()
+                ?: return Result.success(false)
+
+            val documentId = "${userId}_${playerId}"
+            val document = firestore.collection(COLLECTION_FAVORITE_PLAYERS)
+                .document(documentId)
+                .get()
+                .await()
+
+            Result.success(document.exists())
+        } catch (e: Exception) {
+            Timber.tag("FavoriteRepositoryImpl")
+                .e(e, "Error checking if player is favorite: $playerId")
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun togglePlayerNotification(
+        playerId: String,
+        isEnabled: Boolean
+    ): Result<Unit> {
+        return executedWithUserCheck { userId ->
+            Timber.tag("FavoriteRepositoryImpl")
+                .d("Toggling notification for player $playerId to $isEnabled")
+
+            val documentId = "${userId}_${playerId}"
+            val docRef = firestore.collection(COLLECTION_FAVORITE_PLAYERS).document(documentId)
+
+            // Check if document exists
+            val document = docRef.get().await()
+            if (!document.exists()) {
+                throw FavoriteException.PlayerNotFound
+            }
+
+            // Update notification setting
+            val updates = mapOf(FIELD_IS_ENABLE_NOTIFICATION to isEnabled)
+            docRef.update(updates).await()
+
+            Timber.tag("FavoriteRepositoryImpl")
+                .d("Successfully updated notification status for player $playerId")
+        }
+    }
+
+    override fun observeFavoritePlayers(): Flow<Resource<List<FavoritePlayer>>> = callbackFlow {
+        val userId = currentUserId.firstOrNull()
+        trySend(Resource.Loading)
+        if (userId == null) {
+            trySend(Resource.Success(emptyList()))
+            close()
+            return@callbackFlow
+        }
+
+        val listener = firestore.collection(COLLECTION_FAVORITE_PLAYERS)
+            .whereEqualTo(FIELD_USER_ID, userId)
+            .orderBy(FIELD_ADDED_TIMESTAMP, Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Timber.tag("FavoriteRepositoryImpl")
+                        .e(error, "Error fetching favorite players")
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val favoritePlayers = snapshot?.toObjects(FavoritePlayer::class.java)
+                    ?: emptyList()
+
+                Timber.tag("FavoriteRepositoryImpl")
+                    .d("Observed ${favoritePlayers.size} favorite players")
+
+                trySend(Resource.Success(favoritePlayers))
+            }
+
+        awaitClose { listener.remove() }
+    }.catch { exception ->
+        Timber.tag("FavoriteRepositoryImpl")
+            .e(exception, "Error in observeFavoritePlayers flow")
+        emit(Resource.Success(emptyList()))
+    }.flowOn(ioDispatcher)
+
     private suspend fun <T> executedWithUserCheck(action: suspend (String) -> T): Result<T> {
         return try {
             val currentUserId =
-                currentUserId.firstOrNull() ?: throw FavoriteTeamException.UserNotLoggedIn
+                currentUserId.firstOrNull() ?: throw FavoriteException.UserNotLoggedIn
             val result = action(currentUserId)
             Result.success(result)
-        } catch (e: FavoriteTeamException) {
+        } catch (e: FavoriteException) {
             Result.failure(e)
         } catch (e: Exception) {
-            Result.failure(FavoriteTeamException.FirestoreError(e))
+            Result.failure(FavoriteException.FirestoreError(e))
         }
     }
 }

@@ -60,8 +60,8 @@ class IVSPlayerViewModel @Inject constructor(
         when (intent) {
             is IVSPlayerIntent.HideControls -> handleHideControls()
             is IVSPlayerIntent.LoadStream -> {
-                /*handleLoadStream()*/
-                ivsPlayer.loadAndPlay(HLS)
+                handleLoadStream()
+                //ivsPlayer.loadAndPlay(HLS)
             }
 
             is IVSPlayerIntent.PlayPause -> handlePlayPause()

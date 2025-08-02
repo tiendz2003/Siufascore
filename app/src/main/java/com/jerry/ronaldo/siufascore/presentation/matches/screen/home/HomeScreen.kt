@@ -212,7 +212,7 @@ fun HomeScreen(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 400.dp, max = 950.dp)
+                .heightIn(min = 400.dp, max = 1200.dp)
         ) { page ->
             when (page) {
                 0 -> MatchesScreen(viewmodel, selectedName, selectedLogo,onMatchClick)
@@ -505,6 +505,7 @@ fun MatchList(matches: List<Match>, onMatchClick: (Int) -> Unit = {}) {
     val groupMatches = matches.groupBy { match ->
         match.date.extractDateFromUtc()
     }.toSortedMap()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -520,6 +521,7 @@ fun MatchList(matches: List<Match>, onMatchClick: (Int) -> Unit = {}) {
                 Text(
                     text = date.formatDisplayDate(),
                     fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
                     fontSize = 20.sp,
                     color = Purple,
                     textAlign = TextAlign.Center,

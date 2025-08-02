@@ -98,6 +98,7 @@ fun NewsItemCard(
         ) {
             AsyncImage(
                 modifier = Modifier
+                    .padding(8.dp)
                     .fillMaxWidth()
                     .height(200.dp)
                     .clip(RoundedCornerShape(16.dp)),
@@ -114,7 +115,7 @@ fun NewsItemCard(
             ) {
                 Text(
                     text = article.title,
-                    style = MaterialTheme.typography.titleMedium.copy(
+                    style = MaterialTheme.typography.titleLarge.copy(
                         fontSize = 24.sp,
                         color = Color.Black
                     ),
@@ -145,15 +146,19 @@ fun NewsItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = article.source.title?:"Không rõ nguồn",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color.Gray
+                    text = article.source.title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = Color.Gray,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp
                     )
                 )
                 Text(
                     text = article.publishedAt,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color.Gray
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = Color.Gray,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp
                     )
                 )
             }
@@ -214,13 +219,14 @@ fun NewsItemSmallCard(
                 modifier = Modifier
                     .weight(1f)
                     .height(90.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Title
                 Text(
                     text = article.title,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 3,
@@ -245,15 +251,16 @@ fun NewsItemSmallCard(
                         )
                         Text(
                             text = article.publishedAt,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
                     Text(
                         text = article.source.title,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp,
                         ),
                         color = MaterialTheme.colorScheme.primary,
                         maxLines = 1,

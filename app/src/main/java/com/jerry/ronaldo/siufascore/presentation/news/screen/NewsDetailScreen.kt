@@ -76,10 +76,10 @@ fun NewsDetailScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp).padding(16.dp)
+                    .height(300.dp).statusBarsPadding()
             ) {
                 AsyncImage(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.padding().fillMaxSize(),
                     model = article?.imageUrl,
                     placeholder = painterResource(R.drawable.premier_league),
                     contentDescription = article?.title,
@@ -113,7 +113,7 @@ fun NewsDetailScreen(
                 ) {
                     Text(
                         text = article?.title ?: "Không có tiêu đề",
-                        style = MaterialTheme.typography.headlineSmall.copy(
+                        style = MaterialTheme.typography.titleLarge.copy(
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             lineHeight = 28.sp
@@ -178,7 +178,7 @@ fun NewsDetailScreen(
                     ) {
                         Text(
                             text = "Nội dung bài viết",
-                            style = MaterialTheme.typography.titleMedium.copy(
+                            style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -279,8 +279,10 @@ private fun MetaInfoRow(
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
                 )
             )
             Text(

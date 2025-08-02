@@ -39,7 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,7 +65,7 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     onSignInClick: () -> Unit,
     onSignUpClick: () -> Unit,
-    onSuccess:()->Unit,
+    onSuccess: () -> Unit,
     loginViewModel: SignInViewModel = hiltViewModel()
 ) {
     val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
@@ -106,7 +106,6 @@ fun LoginScreen(
             }
         }
     }
-    // Surface for full screen with background
     Surface(
         modifier = modifier.fillMaxSize(),
         color = PremierPurpleDark
@@ -115,15 +114,15 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
-                .imePadding()  // Handle keyboard padding
-                .pointerInput(Unit) { /* Handle taps if needed */ },
+                .imePadding(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Logo
-            Image(
-                painter = painterResource(id = R.drawable.premier_league),  // Giả định asset logo
+            Icon(
+                painter = painterResource(id = R.drawable.ic_app_logo),
                 contentDescription = "Premier League Logo",
+                tint = Color.White,
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)  // Nếu logo tròn, иначе remove
@@ -133,8 +132,8 @@ fun LoginScreen(
 
             // Title
             Text(
-                text = "Sign in to myPremier League",
-                style = MaterialTheme.typography.headlineMedium.copy(
+                text = "Đăng nhập với Siufascore",
+                style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = PremierWhite
@@ -236,62 +235,73 @@ fun LoginScreen(
                         color = PremierPurpleDark
                     )
                 } else {
-                    Text("Đăng nhập", fontWeight = FontWeight.Bold)
+                    Text(
+                        "Đăng nhập",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 16.sp,
+                            color = PremierPurpleDark
+                        ),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // Or divider
-                Text(
-                    text = "hoặc",
-                    color = PremierGray,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            // Or divider
+            Text(
+                text = "hoặc",
+                color = PremierGray,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // Social Login Buttons
-                SocialLoginButton(
-                    iconRes = R.drawable.premier_league,  // Giả định icons
-                    text = "Đăng nhập với Google",
-                    onClick = {
-                        loginViewModel.sendIntent(AuthIntent.SignInWithGoogle(
+            // Social Login Buttons
+            SocialLoginButton(
+                iconRes = R.drawable.ic_gg,  // Giả định icons
+                text = "Đăng nhập với Google",
+                onClick = {
+                    loginViewModel.sendIntent(
+                        AuthIntent.SignInWithGoogle(
                             context = activity
-                        ))
-                    }
-                )
+                        )
+                    )
+                }
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                SocialLoginButton(
-                    iconRes = R.drawable.premier_league,
-                    text = "Đăng nhập với Facebook",
-                    onClick = { /* Handle FB */ }
-                )
+            SocialLoginButton(
+                iconRes = R.drawable.ic_fb,
+                text = "Đăng nhập với Facebook",
+                onClick = { /* Handle FB */ }
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
 
-                Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
 
-                Text(
-                    text = "Không có tài khoản? Đăng ký ngay",
-                    color = PremierWhite,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().clickable {
+            Spacer(modifier = Modifier.height(32.dp))
+
+
+            Text(
+                text = "Không có tài khoản? Đăng ký ngay",
+                color = PremierWhite,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
                         loginViewModel.sendIntent(AuthIntent.NavigateToSignUp)
                     }
-                )
-            }
+            )
         }
     }
+}
 
 @Composable
 fun SocialLoginButton(
@@ -311,13 +321,17 @@ fun SocialLoginButton(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
+            Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text, fontWeight = FontWeight.Medium)
+            Text(
+                text, style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 16.sp,
+                ), fontWeight = FontWeight.Medium
+            )
         }
     }
 }

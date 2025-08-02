@@ -8,7 +8,7 @@ import com.jerry.ronaldo.siufascore.domain.model.TeamInfo
 import com.jerry.ronaldo.siufascore.domain.usecase.favortite.AddFavoriteTeamUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.favortite.ObserveFavoriteTeamsUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.favortite.RemoveFavoriteTeamUseCase
-import com.jerry.ronaldo.siufascore.domain.usecase.football.GetDetailTeamUseCase
+import com.jerry.ronaldo.siufascore.domain.usecase.football.GetTeamStatisticsUseCase
 import com.jerry.ronaldo.siufascore.presentation.player.PlayerDetailTab
 import com.jerry.ronaldo.siufascore.utils.Resource
 import com.jerry.ronaldo.siufascore.utils.getCurrentSeason
@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel(assistedFactory = DetailTeamViewModel.Factory::class)
 class DetailTeamViewModel @AssistedInject constructor(
-    private val getDetailTeamUseCase: GetDetailTeamUseCase,
+    private val getTeamStatisticsUseCase: GetTeamStatisticsUseCase,
     private val addFavoriteTeamUseCase: AddFavoriteTeamUseCase,
     private val observeFavoriteTeamUseCase: ObserveFavoriteTeamsUseCase,
     private val removeFavoriteTeamUseCase: RemoveFavoriteTeamUseCase,
@@ -43,7 +43,7 @@ class DetailTeamViewModel @AssistedInject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _teamStatisticResource: StateFlow<Resource<ResponseTeamStatistics>> =
         _season.flatMapLatest { season ->
-            getDetailTeamUseCase(teamId, leagueId, season)
+            getTeamStatisticsUseCase(teamId, leagueId, season)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

@@ -21,6 +21,7 @@ import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToHome
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToLiveStreamScreen
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToNews
 import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToSearch
+import com.jerry.ronaldo.siufascore.presentation.navigation.navigateToSetting
 import com.jerry.ronaldo.siufascore.utils.AuthResult
 import com.jerry.ronaldo.siufascore.utils.NetworkMonitor
 import kotlinx.coroutines.CoroutineScope
@@ -113,9 +114,12 @@ class AppState(
             TopLevelDestination.FAVORITE -> navController.navigateToFavorite(topLevelNavOptions)
             TopLevelDestination.HIGHLIGHT -> navController.navigateToHighlight(topLevelNavOptions)
             TopLevelDestination.NEWS -> navController.navigateToNews(topLevelNavOptions)
-            TopLevelDestination.LIVES_STREAM -> {navController.navigateToLiveStreamScreen(topLevelNavOptions)}
+            TopLevelDestination.LIVES_STREAM -> {
+                navController.navigateToLiveStreamScreen(topLevelNavOptions)
+            }
         }
     }
 
     fun navigateToSearch() = navController.navigateToSearch()
+    fun navigateToSetting() = navController.navigateToSetting()
 }

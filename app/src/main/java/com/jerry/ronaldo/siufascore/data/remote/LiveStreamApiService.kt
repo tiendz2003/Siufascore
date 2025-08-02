@@ -7,7 +7,7 @@ import retrofit2.http.Path
 
 interface LiveStreamingApiService {
 
-    @GET("api/live/match/{matchId}/stream")
+    @GET("api/live/fixture/{matchId}/stream")
     suspend fun getStreamUrl(
         @Path("matchId") matchId: Long,
         @Header("X-Device-Type") deviceType: String = "mobile",

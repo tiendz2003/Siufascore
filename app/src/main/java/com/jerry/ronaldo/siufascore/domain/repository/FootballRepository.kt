@@ -41,5 +41,6 @@ interface FootballRepository {
     suspend fun getPlayerTrophies(playerId: Int): Flow<Resource<List<PlayerTrophy>>>
 
     @WorkerThread
-    suspend fun getDetailTeamInfo(teamId: Int,leagueId:Int, season: Int): Flow<Resource<ResponseTeamStatistics>>
+    suspend fun getTeamStatistics(teamId: Int, leagueId:Int, season: Int): Flow<Resource<ResponseTeamStatistics>>
+
 }

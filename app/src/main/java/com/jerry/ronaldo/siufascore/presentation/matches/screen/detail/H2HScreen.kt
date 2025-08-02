@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.jerry.ronaldo.siufascore.domain.model.Match
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple80
-import com.jerry.ronaldo.siufascore.utils.extractDateFromUtc
 import com.jerry.ronaldo.siufascore.utils.formatDisplayDate
 import timber.log.Timber
 
@@ -34,7 +33,7 @@ fun H2HScreen(
     onMatchClick: (Match) -> Unit
 ) {
     Timber.tag("H2HScreen").d("Matches: $matches")
-    val matchByDate = matches.groupBy { it.date.extractDateFromUtc() }.toSortedMap()
+    val matchByDate = matches.groupBy { it.date }.toSortedMap()
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp),

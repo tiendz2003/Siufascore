@@ -17,9 +17,10 @@ data class DetailPlayerUiState(
     val playerOverview: List<TimelineItem>? = emptyList(),
     val selectedTab: PlayerDetailTab = PlayerDetailTab.OVERVIEW,
     val availableSeasons: List<Int> = emptyList(),
-    val isFollowing: Boolean = false,
+    val isFavoritePlayer: Boolean = false,
+    val isAddingFavorite: Boolean = false,
     val currentSeason: Int = 2024,
-    val hasData: Boolean = false
+    val hasData: Boolean = false,
 ) : ViewState {
 
     // Loading states
@@ -62,7 +63,7 @@ data class DetailPlayerUiState(
     } ?: "N/A"
 
     // UI helpers
-    val followButtonText: String get() = if (isFollowing) "Đang theo dõi" else "Theo dõi"
+    val followButtonText: String get() = if (isFavoritePlayer) "Đang theo dõi" else "Theo dõi"
     val canChangeSeason: Boolean get() = hasData && !isStatLoading
 
 
@@ -85,7 +86,7 @@ sealed interface DetailPlayerIntent : Intent {
     data object LoadPlayerData : DetailPlayerIntent
     data object RefreshData : DetailPlayerIntent
     data class SelectTab(val tab: PlayerDetailTab) : DetailPlayerIntent
-    data object ToggleFollow : DetailPlayerIntent
+    data object ToggleFollowPlayer : DetailPlayerIntent
     data class ChangeSeason(val season: Int) : DetailPlayerIntent
     data object RetryLoading : DetailPlayerIntent
 }

@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.navOptions
 import com.jerry.ronaldo.siufascore.presentation.LiveStreamPlayerActivity
@@ -114,7 +115,18 @@ fun AppNavHost(
             },
             onBackClick = navController::popBackStack
         )
-
+        settingScreen (
+            onBackClick = navController::popBackStack,
+            onSignOut = {
+                navOptions {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        inclusive = true
+                    }
+                }.let { options ->
+                    navController.navigateToLogin(navOptions = options)
+                }
+            }
+        )
         detailPlayerScreen(
             onBackClick = navController::popBackStack
         )

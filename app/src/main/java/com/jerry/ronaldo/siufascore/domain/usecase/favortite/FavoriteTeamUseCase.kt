@@ -3,14 +3,14 @@ package com.jerry.ronaldo.siufascore.domain.usecase.favortite
 import com.jerry.ronaldo.siufascore.data.model.FavoriteTeam
 import com.jerry.ronaldo.siufascore.domain.model.LeagueInfo
 import com.jerry.ronaldo.siufascore.domain.model.TeamInfo
-import com.jerry.ronaldo.siufascore.domain.repository.FavoriteTeamsRepository
+import com.jerry.ronaldo.siufascore.domain.repository.FavoriteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AddFavoriteTeamUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
+    private val repository: FavoriteRepository
 ) {
     suspend operator fun invoke(teamInfo: TeamInfo, leagueInfo: LeagueInfo) =
         repository.addFavoriteTeam(
@@ -20,25 +20,17 @@ class AddFavoriteTeamUseCase @Inject constructor(
 }
 // Remove Favorite Team Use Case
 class RemoveFavoriteTeamUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
+    private val repository: FavoriteRepository
 ) {
     suspend operator fun invoke(teamId: Int): Result<Unit> {
         return repository.removeFavoriteTeam(teamId)
     }
 }
 
-// Get Favorite Teams Use Case
-class GetFavoriteTeamsUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
-) {
-    suspend operator fun invoke(): Result<List<FavoriteTeam>> {
-        return repository.getFavoriteTeams()
-    }
-}
 
 // Observe Favorite Teams Use Case
 class ObserveFavoriteTeamsUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
+    private val repository: FavoriteRepository
 ) {
     operator fun invoke(): Flow<List<FavoriteTeam>> {
         return repository.observeFavoriteTeams()
@@ -47,7 +39,7 @@ class ObserveFavoriteTeamsUseCase @Inject constructor(
 
 // Check if Team is Favorite Use Case
 class IsTeamFavoriteUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
+    private val repository: FavoriteRepository
 ) {
     suspend operator fun invoke(teamId: Int): Result<Boolean> {
         return repository.isFavoriteTeam(teamId)
@@ -55,7 +47,7 @@ class IsTeamFavoriteUseCase @Inject constructor(
 }
 
 class ToggleNotificationUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
+    private val repository: FavoriteRepository
 ) {
     suspend operator fun invoke(teamId: Int, isEnabled: Boolean): Result<Unit> {
         return repository.toggleNotification(teamId, isEnabled)
@@ -64,7 +56,7 @@ class ToggleNotificationUseCase @Inject constructor(
 
 
 class GetNotificationStatusUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
+    private val repository: FavoriteRepository
 ) {
     suspend operator fun invoke(teamId: Int): Flow<Boolean> {
         return repository.observeFavoriteTeams()
@@ -75,7 +67,7 @@ class GetNotificationStatusUseCase @Inject constructor(
     }
 }
 class GetFavoriteTeamsByLeagueUseCase @Inject constructor(
-    private val repository: FavoriteTeamsRepository
+    private val repository: FavoriteRepository
 ) {
     operator fun invoke(): Flow<Map<String, List<FavoriteTeam>>> {
         return repository.observeFavoriteTeams()

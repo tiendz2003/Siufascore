@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.jerry.ronaldo.siufascore.R
 import com.jerry.ronaldo.siufascore.domain.model.MatchEvent
+import com.jerry.ronaldo.siufascore.presentation.favorite.Loading
 import com.jerry.ronaldo.siufascore.presentation.matches.DetailMatchViewModel
 import com.jerry.ronaldo.siufascore.presentation.ui.DetailTopAppBar
 import com.jerry.ronaldo.siufascore.presentation.ui.Purple
@@ -75,30 +76,36 @@ fun DetailMatchScreen(
         topBar = {
             DetailTopAppBar(
                 onBackClick = onBackClick,
-                homeName = uiState.match?.homeTeam?.name ?: "?",
-                awayName = uiState.match?.awayTeam?.name ?: "?",
+                homeName = uiState.match?.homeTeam?.name ?: "Đang tải",
+                awayName = uiState.match?.awayTeam?.name ?: "Đang tải",
                 scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
-            item("match_header") {
-                MatchHeaderCard(uiState)
-            }
-            item("match_row") {
-                MatchTabRow(
-                    uiState = uiState,
-                    onSelectedTab = { tab->
-                        detailViewModel.sendIntent(DetailMatchIntent.SelectTab(tab))
-                    }
-                )
-            }
+        if(uiState.isLoading){
+            Loading(
+                color = Color.White
+            )
+        }else{
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                item("match_header") {
+                    MatchHeaderCard(uiState)
+                }
+                item("match_row") {
+                    MatchTabRow(
+                        uiState = uiState,
+                        onSelectedTab = { tab->
+                            detailViewModel.sendIntent(DetailMatchIntent.SelectTab(tab))
+                        }
+                    )
+                }
 
+            }
         }
     }
 }
@@ -169,6 +176,7 @@ fun MatchHeaderCard(uiState: DetailMatchState) {
 fun MatchInfo(
     date: String, venue: String
 ) {
+    Timber.d("MatchInfo: date=$date, venue=$venue")
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -472,7 +480,7 @@ fun MatchTabRow(uiState: DetailMatchState, onSelectedTab: (MatchDetailTab) -> Un
                 when (tabs[page]) {
                     MatchDetailTab.OVERVIEW ->
                         MatchStatsScreen(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxSize(),
                             homeTeamName = uiState.match?.homeTeam?.name ?: "?",
                             awayTeamName = uiState.match?.awayTeam?.name ?: "?",
                             statistics = uiState.statistics
@@ -484,7 +492,7 @@ fun MatchTabRow(uiState: DetailMatchState, onSelectedTab: (MatchDetailTab) -> Un
                             awayFormation = uiState.homeTeamFormation ?: "Đang tải sơ đồ",
                             homeLineup = uiState.homeTeamLineup,
                             awayLineup = uiState.awayTeamLineup,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxSize(),
                             showBench = true,
                             onPlayerClick = { player ->
 
@@ -714,13 +722,13 @@ private fun NoGoalsState(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "No Goals Yet",
+                text = "Chưa có bàn thắng nào",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "Goals will appear here when scored",
+                text = "Bàn thắng sẽ được cập nhật khi trận đấu diễn ra",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
@@ -733,9 +741,9 @@ private fun NoGoalsState(modifier: Modifier = Modifier) {
 private fun getGoalTypeDisplay(detail: String): String {
     return when {
         detail.contains("Penalty", ignoreCase = true) -> "Penalty"
-        detail.contains("Own Goal", ignoreCase = true) -> "Own Goal"
-        detail.contains("Header", ignoreCase = true) -> "Header"
-        detail.contains("Free-kick", ignoreCase = true) -> "Free-kick"
+        detail.contains("Own Goal", ignoreCase = true) -> "OG"
+        detail.contains("Header", ignoreCase = true) -> "Đánh đầu"
+        detail.contains("Free-kick", ignoreCase = true) -> "Đá phạt"
         detail.contains("Normal Goal", ignoreCase = true) -> "Goal"
         else -> if (detail.length > 15) detail.take(12) + "..." else detail
     }
