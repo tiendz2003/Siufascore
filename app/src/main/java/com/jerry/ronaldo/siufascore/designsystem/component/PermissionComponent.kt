@@ -57,19 +57,15 @@ fun PermissionToggleCard(
     var showSettingsDialog by remember { mutableStateOf(false) }
     var currentPermissionType by remember { mutableStateOf<PermissionType?>(null) }
 
-    // Initialize permission state
     LaunchedEffect (permissionType) {
         permissionManager.initPermissionState(context, permissionType)
     }
-
-    // Permission launcher specifically for this component
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         currentPermissionType?.let { type ->
             permissionManager.handlePermissionResult(type, isGranted)
             onPermissionChanged?.invoke(isGranted)
-
             if (!isGranted) {
                 showRationaleDialog = true
             }
@@ -83,8 +79,7 @@ fun PermissionToggleCard(
         val newState = permissionManager.getPermissionState(permissionType)
         onPermissionChanged?.invoke(newState?.isGranted ?: false)
     }
-
-    // Listen to events
+    //la'ng nghe su kien
     LaunchedEffect(permissionManager.events) {
         permissionManager.events.collect { event ->
             when (event) {
@@ -98,7 +93,7 @@ fun PermissionToggleCard(
                         showSettingsDialog = true
                     }
                 }
-                else -> { /* Handle other events if needed */ }
+                else -> {  }
             }
         }
     }
@@ -180,8 +175,6 @@ fun PermissionToggleCard(
             }
         }
     }
-
-    // Rationale Dialog
     if (showRationaleDialog) {
         PermissionRationaleDialog(
             permissionType = permissionType,
@@ -193,8 +186,6 @@ fun PermissionToggleCard(
             }
         )
     }
-
-    // Settings Dialog
     if (showSettingsDialog) {
         PermissionSettingsDialog(
             permissionType = permissionType,

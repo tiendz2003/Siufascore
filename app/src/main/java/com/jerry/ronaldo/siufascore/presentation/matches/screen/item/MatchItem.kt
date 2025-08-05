@@ -1,6 +1,7 @@
 package com.jerry.ronaldo.siufascore.presentation.matches.screen.item
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,7 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -154,7 +155,7 @@ fun MatchLiveItem(
     awayScore: Int?,
     matchTime: String,
     venue: String,
-    status: MatchStatus = MatchStatus.SCHEDULED,
+   status: MatchStatus = MatchStatus.SCHEDULED,
     onMatchClick: (Int) -> Unit = {},
 ) {
     Card(
@@ -182,7 +183,9 @@ fun MatchLiveItem(
     ) {
         Box(
             modifier = Modifier
+
                 .fillMaxWidth()
+
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
@@ -193,36 +196,42 @@ fun MatchLiveItem(
                         radius = 800f
                     )
                 )
-                .padding(8.dp)
         ) {
+            Image(
+                modifier = Modifier
+                    .width(280.dp)
+                    .height(165.dp), // Đặt height cố định
+                painter = painterResource(R.drawable.bg_match_live),
+                contentDescription = "livestream_card",
+                contentScale = ContentScale.Crop // Cắt ảnh để fit
+            )
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TeamSection(
                         team = homeTeam,
-                        modifier = Modifier.wrapContentWidth()
+                        modifier = Modifier.width(80.dp)
                     )
                     ScoreSection(
                         homeScore = homeScore,
                         awayScore = awayScore,
-                        status = status,
-                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
                     TeamSection(
                         team = awayTeam,
-                        modifier = Modifier.wrapContentWidth()
+                        modifier = Modifier.width(80.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 MatchTimeChip(time = matchTime, status = status)
                 Spacer(modifier = Modifier.height(12.dp))
                 VenueInfo(venue = venue)
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }
@@ -254,7 +263,7 @@ fun TeamSection(
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = 14.sp,
-                color = Purple
+                color = Color.White
             ),
         )
     }
@@ -264,13 +273,12 @@ fun TeamSection(
 private fun ScoreSection(
     homeScore: Int?,
     awayScore: Int?,
-    status: MatchStatus,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         ScoreDisplay(
             score = homeScore,
@@ -282,7 +290,7 @@ private fun ScoreSection(
                 fontWeight = FontWeight.Light,
                 fontSize = 24.sp
             ),
-            color = Purple.copy(0.6f)
+            color = Color.White
         )
         ScoreDisplay(
             score = awayScore,
@@ -297,14 +305,14 @@ private fun ScoreDisplay(
     isWinner: Boolean
 ) {
     val backgroundColor = if (isWinner && score != null) {
-        Purple.copy(0.2f)
+        Color.White.copy(0.2f)
     } else {
         Color.Transparent
     }
     val textColor = if (isWinner && score != null) {
-        Purple
+        Color.White
     } else {
-        Purple.copy(0.5f)
+        Color.White.copy(0.5f)
     }
     Box(
         modifier = Modifier
@@ -336,7 +344,7 @@ fun MatchTimeChip(
         MatchStatus.POSTPONED -> Color(0xFFFFC107) to Color.Black        // Vàng - Bị hoãn
         MatchStatus.IN_PLAY -> Color(0xFFFF4444) to Color.White          // Đỏ - Đang diễn ra
         MatchStatus.PAUSED -> Color(0xFFFFC107) to Color.White           // Tím - Nghỉ giữa hiệp
-        MatchStatus.FINISHED -> Color(0xFF4CAF50) to Color.White         // Xanh lá - Kết thúc
+        MatchStatus.FT -> Color(0xFF1E90FF) to Color.White         // Xanh lá - Kết thúc
         MatchStatus.SUSPENDED -> Color(0xFF795548) to Color.White        // Nâu - Tạm dừng (do sự cố)
         MatchStatus.CANCELLED -> Color(0xFFBDBDBD) to Color.Black        // Xám nhạt - Hủy bỏ
     }
@@ -394,7 +402,7 @@ private fun VenueInfo(venue: String) {
                 letterSpacing = 0.5.sp,
                 fontSize = 12.sp
             ),
-            color = Purple
+            color =Color.White
         )
     }
 }

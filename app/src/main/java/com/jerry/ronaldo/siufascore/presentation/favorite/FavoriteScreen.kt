@@ -24,6 +24,7 @@ import timber.log.Timber
 fun FavoriteScreen(
     modifier: Modifier = Modifier,
     onTeamClick:(Int,Int) ->Unit,
+    onPlayerClick:(Int) ->Unit,
     favoriteViewModel: FavoriteViewModel = hiltViewModel()
 ) {
     val uiState by favoriteViewModel.uiState.collectAsStateWithLifecycle()
@@ -38,6 +39,10 @@ fun FavoriteScreen(
                 FavoriteEvent.ShowNoFavoriteTeamsMessage -> {
 
                 }
+
+                is FavoriteEvent.NavigateToPlayerDetail -> {
+                    onPlayerClick(event.playerId)
+                }
             }
         }
     }
@@ -49,16 +54,13 @@ fun FavoriteScreen(
             items = FavoriteType.entries,
             selectedType = uiState.selectedFavoriteType,
             onTypeSelected = { type ->
-
+                favoriteViewModel.sendIntent(FavoriteIntent.SelectFavoriteType(type))
             },
             icon = { type ->
                 type.icon
             },
         )
         when {
-            uiState.isLoading -> {
-                Loading()
-            }
             hasResult -> {
                 when (uiState.selectedFavoriteType) {
                     FavoriteType.TEAMS -> {
@@ -91,9 +93,15 @@ fun FavoriteScreen(
                             },
                         )
                     }
-
                     FavoriteType.PLAYERS -> {
-
+                        FavoritePlayersScreen(
+                            uiState = uiState,
+                            onPlayerClick = {playerId->
+                                favoriteViewModel.sendIntent(
+                                    FavoriteIntent.NavigateToPlayerDetail(playerId)
+                                )
+                            }
+                        )
                     }
 
                     FavoriteType.MATCHES -> {

@@ -3,21 +3,23 @@ package com.jerry.ronaldo.siufascore.presentation.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
 import com.jerry.ronaldo.siufascore.presentation.auth.LoginScreen
 import com.jerry.ronaldo.siufascore.presentation.auth.SignUpScreen
+import com.jerry.ronaldo.siufascore.utils.NavigationTransitionResolver
+import com.jerry.ronaldo.siufascore.utils.animComposable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object AuthRoute
+data object AuthRoute:AppRoute
 
 fun NavController.navigateToLogin(navOptions: NavOptions) = navigate(route = AuthRoute, navOptions)
 fun NavGraphBuilder.loginScreen(
+    transitionResolver: NavigationTransitionResolver,
     onSignUpClick: () -> Unit,
     onSignInClick: () -> Unit,
     onSuccess:()->Unit
 ) {
-    composable<AuthRoute> {
+    animComposable<AuthRoute>(transitionResolver) {
         LoginScreen(
             onSignInClick = onSignInClick,
             onSignUpClick = onSignUpClick,
@@ -27,14 +29,15 @@ fun NavGraphBuilder.loginScreen(
 
 }
 @Serializable
-data object SignUpRoute
+data object SignUpRoute:AppRoute
 
 fun NavController.navigateToSignUp(navOptions: NavOptions? = null) = navigate(route = SignUpRoute, navOptions)
 fun NavGraphBuilder.signUpScreen(
+    transitionResolver: NavigationTransitionResolver,
     onSignUpClick: () -> Unit,
     onSuccess:()->Unit
 ) {
-    composable<SignUpRoute> {
+    animComposable<SignUpRoute>(transitionResolver) {
         SignUpScreen(
             onSignInClick = onSignUpClick,
             onSuccess = onSuccess

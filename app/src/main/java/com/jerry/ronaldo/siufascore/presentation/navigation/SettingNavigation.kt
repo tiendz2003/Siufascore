@@ -3,18 +3,22 @@ package com.jerry.ronaldo.siufascore.presentation.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
 import com.jerry.ronaldo.siufascore.presentation.setting.SettingScreen
+import com.jerry.ronaldo.siufascore.utils.NavigationTransitionResolver
+import com.jerry.ronaldo.siufascore.utils.animComposable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object SettingRoute
+data object SettingRoute:AppRoute
 
 fun NavGraphBuilder.settingScreen(
+    transitionResolver: NavigationTransitionResolver,
     onBackClick: () -> Unit,
     onSignOut: () -> Unit
 ) {
-    composable<SettingRoute> {
+    animComposable<SettingRoute>(
+        transitionResolver = transitionResolver,
+    ) {
         SettingScreen(
             onBackClick = onBackClick,
             onSignOut = {

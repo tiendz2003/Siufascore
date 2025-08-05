@@ -6,7 +6,7 @@ enum class MatchStatus(val displayName: String) {
     POSTPONED("Bị hoãn"),
     IN_PLAY("Đang thi đấu"),
     PAUSED("Nghỉ giữa hiệp"),
-    FINISHED("Kết thúc"),
+    FT("Kết thúc"),
     SUSPENDED("Tạm dừng"),
     CANCELLED("Đã hủy");
 

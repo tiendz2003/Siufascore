@@ -32,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -95,19 +97,21 @@ fun SignUpScreen(
         ) {
             // Logo
             Image(
-                painter = painterResource(id = R.drawable.premier_league),
+                painter = painterResource(id = R.drawable.ic_app_logo),
+                colorFilter = ColorFilter.tint(Color.White),
                 contentDescription = "Premier League Logo",
                 modifier = Modifier
                     .size(120.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // Title
             Text(
-                text = "Sign up for myPremier League",
-                style = MaterialTheme.typography.headlineMedium.copy(
+                text = "Đăng ký tài khoản Siufascore",
+                style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = PremierWhite
@@ -253,7 +257,12 @@ fun SignUpScreen(
                         color = PremierPurpleDark
                     )
                 } else {
-                    Text("Đăng ký", fontWeight = FontWeight.Bold)
+                    Text("Đăng ký",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color.White,
+                            fontSize = 18.sp
+                        ),
+                        fontWeight = FontWeight.Bold)
                 }
             }
 

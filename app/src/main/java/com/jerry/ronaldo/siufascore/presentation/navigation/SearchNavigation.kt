@@ -4,24 +4,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.jerry.ronaldo.siufascore.presentation.player.DetailPlayerScreen
 import com.jerry.ronaldo.siufascore.presentation.player.DetailPlayerViewModel
 import com.jerry.ronaldo.siufascore.presentation.search.screen.SearchScreen
 import com.jerry.ronaldo.siufascore.presentation.team.DetailTeamScreen
 import com.jerry.ronaldo.siufascore.presentation.team.DetailTeamViewModel
+import com.jerry.ronaldo.siufascore.utils.NavigationTransitionResolver
+import com.jerry.ronaldo.siufascore.utils.animComposable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object SearchRoute
+data object SearchRoute:AppRoute
 
 fun NavGraphBuilder.searchScreen(
+    transitionResolver: NavigationTransitionResolver,
     onPlayerClick: (Int) -> Unit,
     onTeamClick: (Int,Int) -> Unit,
     onBackClick: () -> Unit
 ) {
-    composable<SearchRoute> {
+    animComposable<SearchRoute>(transitionResolver) {
         SearchScreen(
             onBackClick = onBackClick,
             onPlayerClick = { id->
@@ -41,7 +42,7 @@ fun NavController.navigateToSearch(
 }
 
 @Serializable
-data class DetailPlayerRoute(val playerId: Int)
+data class DetailPlayerRoute(val playerId: Int):AppRoute
 
 fun NavController.navigateToDetailPlayerScreen(
     id: Int,
@@ -51,14 +52,16 @@ fun NavController.navigateToDetailPlayerScreen(
 }
 
 fun NavGraphBuilder.detailPlayerScreen(
+    transitionResolver: NavigationTransitionResolver,
     onBackClick: () -> Unit,
 ) {
-    composable<DetailPlayerRoute> { entry ->
-        val id = entry.toRoute<DetailPlayerRoute>().playerId
+    animComposable<DetailPlayerRoute>(
+        transitionResolver = transitionResolver
+    ) { route->
         //Màn hình detail search
         DetailPlayerScreen(
             viewModel = hiltViewModel<DetailPlayerViewModel,DetailPlayerViewModel.Factory>(){factory->
-                factory.create(id)
+                factory.create(route.playerId)
             },
             onBackClick = onBackClick
         )
@@ -78,12 +81,13 @@ fun NavController.navigateToDetailTeamScreen(
 }
 
 fun NavGraphBuilder.detailTeamScreen(
+    transitionResolver: NavigationTransitionResolver,
     onBackClick: () -> Unit,
     onPlayerClick:(Int) ->Unit
 ) {
-    composable<DetailTeamRoute> { entry ->
-        val teamId = entry.toRoute<DetailTeamRoute>().teamId
-        val leagueId = entry.toRoute<DetailTeamRoute>().leagueId
+    animComposable<DetailTeamRoute>(transitionResolver) { route ->
+        val teamId = route.teamId
+        val leagueId = route.leagueId
         DetailTeamScreen(
             viewModel = hiltViewModel<DetailTeamViewModel,DetailTeamViewModel.Factory> { factory->
                 factory.create(teamId,leagueId)

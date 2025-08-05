@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -155,6 +156,8 @@ private fun AppScaffoldContent(
     shouldShowTopAppBar: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val onNavigateToSearch by rememberUpdatedState(appState::navigateToSearch)
+    val onNavigateToSetting by rememberUpdatedState(appState::navigateToSetting)
     Scaffold(
         modifier = modifier.semantics {
             testTagsAsResourceId = true
@@ -188,11 +191,11 @@ private fun AppScaffoldContent(
                             containerColor = PremierPurpleDark
                         ),
                         onNavigationClick = {
-                            appState.navigateToSearch()
+                            onNavigateToSearch()
                         },
                         modifier = modifier,
                         onActionClick = {
-                            appState.navigateToSetting()
+                            onNavigateToSetting()
                         }
                     )
                 }

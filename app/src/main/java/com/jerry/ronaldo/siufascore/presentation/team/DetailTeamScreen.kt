@@ -133,9 +133,11 @@ fun DetailTeamScreen(
             ) { index ->
                 when (tabs[index]) {
                     PlayerDetailTab.OVERVIEW -> {
-                        TeamStatisticsScreen(
-                            statistics = uiState.teamStatistic!!,
-                        )
+                        uiState.teamStatistic?.let {statistic->
+                            TeamStatisticsScreen(
+                                statistics = statistic,
+                            )
+                        }
                     }
                     PlayerDetailTab.STATS -> {
 

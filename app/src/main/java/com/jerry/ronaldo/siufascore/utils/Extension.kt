@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.ColorRes
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -18,6 +19,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavDeepLink
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import androidx.palette.graphics.Palette
 import coil3.imageLoader
 import coil3.request.ImageRequest
@@ -30,6 +35,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.Query
 import com.jerry.ronaldo.siufascore.R
 import com.jerry.ronaldo.siufascore.domain.model.PlayerSeasonStats
+import com.jerry.ronaldo.siufascore.presentation.navigation.AppRoute
 import com.jerry.ronaldo.siufascore.presentation.ui.PremierPurpleDark
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -434,5 +440,76 @@ fun Fragment.handleBack(action: () -> Unit) {
             action()
         }
     })
+
+}
+
+inline fun <reified T : Any> NavGraphBuilder.animComposable(
+    transitionResolver: NavigationTransitionResolver,
+    deepLinks: List<NavDeepLink> = emptyList(),
+    crossinline content: @Composable AnimatedContentScope.(T) -> Unit
+) {
+    composable<T>(
+        deepLinks = deepLinks,
+        enterTransition = {
+            val fromRoute = initialState.destination.route?.let {
+                // Convert string route back to object if needed
+                try {
+                    initialState.toRoute<AppRoute>()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            val toRoute: T = targetState.toRoute()
+            transitionResolver.resolveTransition(fromRoute, toRoute).targetContentEnter
+        },
+        exitTransition = {
+            val fromRoute: T = initialState.toRoute()
+            val toRoute = targetState.destination.route?.let {
+                try {
+                    targetState.toRoute<AppRoute>()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            transitionResolver.resolveTransition(fromRoute, toRoute ?: fromRoute)
+                .initialContentExit
+        },
+        popEnterTransition = {
+            val fromRoute = initialState.destination.route?.let {
+                try {
+                    initialState.toRoute<AppRoute>()
+                } catch (e: Exception) {
+                    println("❌ POP ENTER FAILED to get fromRoute: ${e.message}")
+                    e.printStackTrace() // In ra toàn bộ lỗi
+                    null
+                }
+            }
+            val toRoute: T = targetState.toRoute()
+
+            // isPopup = true khi pop
+            transitionResolver.resolveTransition(fromRoute, toRoute, isPopup = true)
+                .targetContentEnter
+        },
+        popExitTransition = {
+            val fromRoute: T = initialState.toRoute()
+            val toRoute = targetState.destination.route?.let {
+                try {
+                    targetState.toRoute<AppRoute>()
+                } catch (e: Exception) {
+                    println("❌ POP EXIT FAILED to get fromRoute: ${e.message}")
+                    e.printStackTrace() // In ra toàn bộ lỗi
+                    null
+                }
+            }
+
+            // isPopup = true khi pop
+            transitionResolver.resolveTransition(fromRoute, toRoute ?: fromRoute, isPopup = true)
+                .initialContentExit
+        }
+    ) { navBackStackEntry ->
+        val route: T = navBackStackEntry.toRoute()
+        content(route)
+    }
 
 }

@@ -3,8 +3,9 @@ package com.jerry.ronaldo.siufascore.presentation.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
 import com.jerry.ronaldo.siufascore.presentation.favorite.FavoriteScreen
+import com.jerry.ronaldo.siufascore.utils.NavigationTransitionResolver
+import com.jerry.ronaldo.siufascore.utils.animComposable
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,13 +15,20 @@ fun NavController.navigateToFavorite(navOptions: NavOptions) =
     navigate(route = FavoriteRoute, navOptions)
 
 fun NavGraphBuilder.favoriteScreen(
-    onTeamClick: (Int, Int) -> Unit
+    transitionResolver: NavigationTransitionResolver,
+    onTeamClick: (Int, Int) -> Unit,
+    onPlayerClick: (Int) -> Unit
 ) {
-    composable<FavoriteRoute> {
+    animComposable<FavoriteRoute>(
+        transitionResolver
+    ) {
         FavoriteScreen(
             onTeamClick = { teamId, leagueId ->
                 onTeamClick(teamId, leagueId)
             },
+            onPlayerClick = { playerId ->
+                onPlayerClick(playerId)
+            }
         )
     }
 }

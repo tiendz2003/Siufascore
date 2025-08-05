@@ -9,14 +9,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.jerry.ronaldo.siufascore.base.Intent
 import com.jerry.ronaldo.siufascore.base.SingleEvent
 import com.jerry.ronaldo.siufascore.base.ViewState
+import com.jerry.ronaldo.siufascore.data.model.FavoritePlayer
 import com.jerry.ronaldo.siufascore.data.model.FavoriteTeam
 import com.jerry.ronaldo.siufascore.utils.Chip
 
 data class FavoriteUiState(
     val favoriteTeamsByLeague: Map<String, List<FavoriteTeam>> = emptyMap(),
+    val favoritePlayers: List<FavoritePlayer> = emptyList(),
     val selectedFavoriteType: FavoriteType = FavoriteType.DEFAULT,
     val selectedLeagueType: AvailableLeague = AvailableLeague.DEFAULT,
-    val isLoading: Boolean = false,
+    val isTeamLoading: Boolean = false,
+    val isPlayerLoading: Boolean = false,
     val error: String? = null,
     val isTogglingNotification: Boolean = false,
     val toggledTeamId: Int? = null
@@ -33,15 +36,18 @@ data class FavoriteUiState(
 }
 sealed class FavoriteIntent : Intent {
     data class SelectLeague(val leagueName: AvailableLeague) : FavoriteIntent()
+    data class SelectFavoriteType(val type: FavoriteType) : FavoriteIntent()
     data class ToggleNotification(val teamId: Int) : FavoriteIntent()
     data class RemoveFavoriteTeam(val teamId: Int) : FavoriteIntent()
     data class NavigateToTeamDetail(val teamId: Int, val leagueId: Int) : FavoriteIntent()
+    data class NavigateToPlayerDetail(val player: FavoritePlayer) : FavoriteIntent()
     data object Refresh : FavoriteIntent()
 }
 
 // Events
 sealed interface FavoriteEvent : SingleEvent {
     data class NavigateToTeamDetail(val teamId: Int, val leagueId: Int) : FavoriteEvent
+    data class NavigateToPlayerDetail(val playerId: Int) : FavoriteEvent
     data class ShowMessage(val message: String) : FavoriteEvent
     data object ShowNoFavoriteTeamsMessage : FavoriteEvent
 }

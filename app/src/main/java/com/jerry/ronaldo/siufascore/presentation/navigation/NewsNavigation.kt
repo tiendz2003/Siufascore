@@ -4,20 +4,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.jerry.ronaldo.siufascore.presentation.news.NewsDetailViewModel
 import com.jerry.ronaldo.siufascore.presentation.news.screen.NewsDetailScreen
 import com.jerry.ronaldo.siufascore.presentation.news.screen.NewsScreen
+import com.jerry.ronaldo.siufascore.utils.NavigationTransitionResolver
+import com.jerry.ronaldo.siufascore.utils.animComposable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object NewsRoute
+data object NewsRoute:AppRoute
 
 fun NavGraphBuilder.newsScreen(
+    transitionResolver: NavigationTransitionResolver,
     onNewsClick: (String) -> Unit
 ) {
-    composable<NewsRoute> {
+    animComposable<NewsRoute>(transitionResolver) {
         NewsScreen(
             onNewsClick = onNewsClick
         )
@@ -31,29 +32,31 @@ fun NavController.navigateToNews(
 }
 
 @Serializable
-data class NewsNavigationRoute(val uri: String)
+data class DetailNewsRoute(val uri: String)
 
 fun NavController.navigateToDetailNews(
     uri: String,
     navOptions: NavOptions? = null
 ) {
-    navigate(route = NewsNavigationRoute(uri), navOptions)
+    navigate(route = DetailNewsRoute(uri), navOptions)
 }
 
 fun NavGraphBuilder.detailNewsScreen(
+    transitionResolver: NavigationTransitionResolver,
     onBackClick: () -> Unit,
     onShareClick: () -> Unit
 ) {
-    composable<NewsNavigationRoute> { entry ->
-        val newsUri = entry.toRoute<NewsNavigationRoute>().uri
+    animComposable<DetailNewsRoute>(
+        transitionResolver
+    ) { route ->
         //Màn hình detailNews
         NewsDetailScreen(
             onBackClick = onBackClick,
             onShareClick = onShareClick,
             newsViewModel = hiltViewModel<NewsDetailViewModel, NewsDetailViewModel.Factory>(
-                key = newsUri
+                key = route.uri
             ) { factory ->
-                factory.create(conceptUri = newsUri)
+                factory.create(conceptUri = route.uri)
             }
         )
 

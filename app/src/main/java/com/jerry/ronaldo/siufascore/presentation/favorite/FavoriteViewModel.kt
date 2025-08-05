@@ -4,58 +4,96 @@ import androidx.lifecycle.viewModelScope
 import com.jerry.ronaldo.siufascore.base.BaseViewModel
 import com.jerry.ronaldo.siufascore.data.model.FavoriteTeam
 import com.jerry.ronaldo.siufascore.domain.usecase.favortite.GetFavoriteTeamsByLeagueUseCase
+import com.jerry.ronaldo.siufascore.domain.usecase.favortite.ObserveFavoritePlayersUseCase
+import com.jerry.ronaldo.siufascore.domain.usecase.favortite.RemoveFavoritePlayerUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.favortite.RemoveFavoriteTeamUseCase
 import com.jerry.ronaldo.siufascore.domain.usecase.favortite.ToggleNotificationUseCase
+import com.jerry.ronaldo.siufascore.domain.usecase.favortite.TogglePlayerNotificationUseCase
+import com.jerry.ronaldo.siufascore.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class FavoriteViewModel @Inject constructor(
     private val getFavoriteTeamsByLeagueUseCase: GetFavoriteTeamsByLeagueUseCase,
-    private val toggleNotificationUseCase: ToggleNotificationUseCase,
-    private val removeFavoriteTeamUseCase: RemoveFavoriteTeamUseCase
+    private val getFavoritePlayerUseCase: ObserveFavoritePlayersUseCase,
+    private val toggleTeamNotificationUseCase: ToggleNotificationUseCase,
+    private val removeFavoriteTeamUseCase: RemoveFavoriteTeamUseCase,
+    private val togglePlayerNotificationUseCase: TogglePlayerNotificationUseCase,
+    private val removeFavoritePlayerUseCase: RemoveFavoritePlayerUseCase
 ) : BaseViewModel<FavoriteIntent, FavoriteUiState, FavoriteEvent>() {
     private val _selectedLeague = MutableStateFlow(AvailableLeague.DEFAULT)
+    private val _selectedTab = MutableStateFlow(FavoriteType.DEFAULT)
     private val _isTogglingNotification = MutableStateFlow(false)
     private val _toggledTeamId = MutableStateFlow<Int?>(null)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val _favoriteTeamsByLeague: StateFlow<Map<String, List<FavoriteTeam>>> =
-        getFavoriteTeamsByLeagueUseCase().stateIn(
+        _selectedTab.flatMapLatest { tab ->
+            if (tab == FavoriteType.TEAMS) {
+                getFavoriteTeamsByLeagueUseCase()
+            } else {
+                MutableStateFlow(emptyMap())
+            }
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyMap()
         )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _favoritePlayer = _selectedTab.flatMapLatest { tab ->
+        if (tab == FavoriteType.PLAYERS) {
+            Timber.tag("FavoriteViewModel").d("Fetching favorite players")
+            getFavoritePlayerUseCase()
+        } else {
+            MutableStateFlow(Resource.Success(emptyList()))
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = Resource.Success(emptyList())
+    )
     private val basicState = combine(
         _selectedLeague,
         _isTogglingNotification,
-        _toggledTeamId
+        _toggledTeamId,
     ) { selectedLeague, isTogglingNotification, toggledTeamId ->
         Triple(selectedLeague, isTogglingNotification, toggledTeamId)
     }
     override val uiState: StateFlow<FavoriteUiState>
         get() = combine(
             basicState,
-            _favoriteTeamsByLeague
-        ) { basic, favoriteTeams ->
+            _favoriteTeamsByLeague,
+            _favoritePlayer,
+            _selectedTab,
+        ) { basic, favoriteTeams, favoritePlayer, selectedTab ->
+            Timber.tag("FavoriteViewModel").d("favoriteTeams:${favoritePlayer}")
             val (selectedLeague, isTogglingNotification, toggledTeamId) = basic
             val isLoading = favoriteTeams.isEmpty()
             FavoriteUiState(
                 favoriteTeamsByLeague = favoriteTeams,
                 selectedLeagueType = selectedLeague,
-                isLoading = isLoading,
+                isTeamLoading = isLoading,
+                isPlayerLoading = favoritePlayer is Resource.Loading,
+                selectedFavoriteType = selectedTab,
+                favoritePlayers = if (favoritePlayer is Resource.Success) favoritePlayer.data else emptyList(),
                 isTogglingNotification = isTogglingNotification,
                 toggledTeamId = toggledTeamId
             )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = FavoriteUiState(isLoading = true)
+            initialValue = FavoriteUiState(isTeamLoading = true)
         )
 
     override suspend fun processIntent(intent: FavoriteIntent) {
@@ -74,6 +112,19 @@ class FavoriteViewModel @Inject constructor(
 
             is FavoriteIntent.SelectLeague -> changeLeagueType(intent.leagueName)
             is FavoriteIntent.ToggleNotification -> toggleNotification(intent.teamId)
+            is FavoriteIntent.SelectFavoriteType -> selectedTab(intent.type)
+            is FavoriteIntent.NavigateToPlayerDetail -> sendEvent(
+                FavoriteEvent.NavigateToPlayerDetail(
+                    intent.player.playerId.toInt()
+                )
+            )
+        }
+    }
+
+    private fun selectedTab(tabType: FavoriteType) {
+        Timber.tag("FavoriteViewModel").d("selectedTab:${tabType}")
+        if (_selectedTab.value != tabType) {
+            _selectedTab.value = tabType
         }
     }
 
@@ -94,7 +145,7 @@ class FavoriteViewModel @Inject constructor(
         }
         val newNotificationStatus = !currentTeam.enableNotification
 
-        val result = toggleNotificationUseCase(teamId, newNotificationStatus)
+        val result = toggleTeamNotificationUseCase(teamId, newNotificationStatus)
         result.fold(
             onSuccess = {
                 Timber.tag("FavoriteViewModel").d("toggleNotification: $it")
@@ -106,7 +157,8 @@ class FavoriteViewModel @Inject constructor(
                 sendEvent(FavoriteEvent.ShowMessage(message))
             },
             onFailure = { error ->
-                Timber.tag("FavoriteViewModel").d("Failed to update notifications: ${error.message}")
+                Timber.tag("FavoriteViewModel")
+                    .d("Failed to update notifications: ${error.message}")
                 sendEvent(FavoriteEvent.ShowMessage("Failed to update notifications: ${error.message}"))
             }
         )
@@ -121,6 +173,17 @@ class FavoriteViewModel @Inject constructor(
             sendEvent(FavoriteEvent.ShowMessage("Đã xóa câu lạc bộ khỏi danh sách yêu thích"))
         }.onFailure { error ->
             sendEvent(FavoriteEvent.ShowMessage("Không thể xóa team :${error.message}"))
+        }
+    }
+
+    private fun removeFavoritePlayer(playerId: Int) {
+        viewModelScope.launch {
+            val result = removeFavoritePlayerUseCase(playerId.toString())
+            result.onSuccess {
+                sendEvent(FavoriteEvent.ShowMessage("Đã xóa cầu thủ khỏi danh sách yêu thích"))
+            }.onFailure { error ->
+                sendEvent(FavoriteEvent.ShowMessage("Không thể xóa cầu thủ :${error.message}"))
+            }
         }
     }
 

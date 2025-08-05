@@ -119,6 +119,8 @@ class MatchesViewModel @Inject constructor(
             standings = (standings as? Resource.Success)?.data ?: emptyList(),
             isStandingsLoading = standings is Resource.Loading,
             standingError = (standings as? Resource.Error)?.exception?.message,
+            //trong thực tế thì sẽ dùng api lấy danh trận đấu trực tiếp
+            liveMatches = (matches as? Resource.Success)?.data ?: emptyList(),
             availableMatchday = (1..38).toList()
         )
     }.stateIn(

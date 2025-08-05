@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,11 +30,8 @@ import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Sports
 import androidx.compose.material.icons.filled.SportsSoccer
-import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -47,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -62,56 +59,41 @@ import com.jerry.ronaldo.siufascore.data.model.Lineup
 import com.jerry.ronaldo.siufascore.data.model.Penalty
 import com.jerry.ronaldo.siufascore.data.model.PenaltyDetail
 import com.jerry.ronaldo.siufascore.data.model.ResponseTeamStatistics
+import com.jerry.ronaldo.siufascore.presentation.ui.PremierPurpleDark
+import com.jerry.ronaldo.siufascore.presentation.ui.PremierPurpleLight
 
 @Composable
 fun TeamStatisticsScreen(
     statistics: ResponseTeamStatistics,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(16.dp),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header với thông tin team và league
-        item {
-            TeamHeaderCard(
-                team = statistics.team,
-                league = statistics.league,
-                form = statistics.form
-            )
-        }
+        TeamHeaderCard(
+            team = statistics.team,
+            league = statistics.league,
+            form = statistics.form
+        )
 
-        // Fixtures Statistics
-        item {
-            FixturesStatisticsCard(fixtures = statistics.fixtures)
-        }
+        FixturesStatisticsCard(fixtures = statistics.fixtures)
 
-        // Goals Statistics
-        item {
-            GoalsStatisticsCard(goals = statistics.goals)
-        }
+        GoalsStatisticsCard(goals = statistics.goals)
 
-        // Performance Metrics
-        item {
-            PerformanceMetricsCard(
-                cleanSheet = statistics.cleanSheet,
-                failedToScore = statistics.failedToScore,
-                penalties = statistics.penalty
-            )
-        }
+        PerformanceMetricsCard(
+            cleanSheet = statistics.cleanSheet,
+            failedToScore = statistics.failedToScore,
+            penalties = statistics.penalty
+        )
+        BiggestRecordsCard(biggest = statistics.biggest)
 
-        // Biggest Records
-        item {
-            BiggestRecordsCard(biggest = statistics.biggest)
-        }
+        FormationsCard(lineups = statistics.lineups)
 
-        // Formations
-        item {
-            FormationsCard(lineups = statistics.lineups)
-        }
     }
 }
 
@@ -131,9 +113,9 @@ private fun TeamHeaderCard(
                 )
             ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = PremierPurpleDark
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -156,9 +138,9 @@ private fun TeamHeaderCard(
             // Team Name
             Text(
                 text = team.name,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -172,7 +154,8 @@ private fun TeamHeaderCard(
                     model = league.logo,
                     contentDescription = "League Logo",
                     modifier = Modifier.size(24.dp),
-                    contentScale = ContentScale.Fit
+                    contentScale = ContentScale.Fit,
+                    colorFilter = ColorFilter.tint(Color.White)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -180,7 +163,8 @@ private fun TeamHeaderCard(
                 Text(
                     text = league.name,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
                 )
             }
 
@@ -194,23 +178,26 @@ private fun TeamHeaderCard(
 
 @Composable
 private fun FormChip(form: String) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = "Form:",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
+            color = Color.White
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)) {
             form.forEach { result ->
                 val color = when (result) {
                     'W' -> Color(0xFF4CAF50) // Green
                     'D' -> Color(0xFFFF9800) // Orange
                     'L' -> Color(0xFFF44336) // Red
-                    else -> Color.Gray
+                    else -> Color.Transparent
                 }
 
                 Box(
@@ -237,13 +224,12 @@ private fun FixturesStatisticsCard(fixtures: Fixtures) {
         title = "Thống kê Lịch thi đấu",
         icon = Icons.Default.Sports
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            // Pie Chart for Win/Draw/Loss
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             FixturesChart(fixtures = fixtures)
-
             Spacer(modifier = Modifier.height(8.dp))
-
-            // Detailed Stats
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -347,20 +333,25 @@ private fun FixtureStatItem(
 
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 16.sp
+            ),
+            color = Color.White
         )
 
         Text(
             text = "${stats.total}",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
         )
 
         Text(
             text = "H: ${stats.home} | A: ${stats.away}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 14.sp
+            ),
+            color = Color.White
         )
     }
 }
@@ -419,13 +410,16 @@ private fun GoalStatColumn(
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 20.sp,
+                color = Color.White
+            ),
             fontWeight = FontWeight.Medium
         )
 
         Text(
             text = "${stats.total}",
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = color
         )
@@ -436,12 +430,17 @@ private fun GoalStatColumn(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "Sân nhà",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 12.sp,
+                    ),
+                    color = Color.White
                 )
                 Text(
                     text = "${stats.home}",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = Color.White,
+                        fontSize = 16.sp
+                    ),
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -449,12 +448,17 @@ private fun GoalStatColumn(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "Sân khách",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 12.sp,
+                        color = Color.White
+                    )
                 )
                 Text(
                     text = "${stats.away}",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = Color.White,
+                        fontSize = 16.sp
+                    ),
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -492,16 +496,18 @@ private fun PerformanceMetricsCard(
                 )
             }
 
-            Divider()
+            HorizontalDivider()
 
-            // Penalty Statistics
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = "Thống kê Penalty",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 20.sp,
+                        color = Color.White
+                    ),
                     fontWeight = FontWeight.Medium
                 )
 
@@ -521,14 +527,22 @@ private fun PerformanceMetricsCard(
                         color = Color(0xFFF44336)
                     )
 
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
                         Text(
                             text = "Tổng",
-                            style = MaterialTheme.typography.labelMedium
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 16.sp,
+                                color = Color.White
+                            )
                         )
                         Text(
                             text = "${penalties.total}",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 20.sp,
+                                color = Color.White
+                            ),
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -558,13 +572,18 @@ private fun MetricItem(
 
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 16.sp,
+                color = Color.White
+            ),
             textAlign = TextAlign.Center
         )
 
         Text(
             text = "$value",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 24.sp
+            ),
             fontWeight = FontWeight.Bold,
             color = color
         )
@@ -583,20 +602,23 @@ private fun PenaltyStatItem(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium
+            style = MaterialTheme.typography.titleLarge.copy(
+                color = Color.White,
+                fontSize = 16.sp
+            )
         )
 
         Text(
             text = "${detail.total}",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = color
         )
 
         Text(
             text = detail.percentage,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.White
         )
     }
 }
@@ -608,11 +630,10 @@ private fun BiggestRecordsCard(biggest: Biggest) {
         icon = Icons.Default.EmojiEvents
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            // Streak Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    containerColor = PremierPurpleLight
                 )
             ) {
                 Column(
@@ -621,7 +642,10 @@ private fun BiggestRecordsCard(biggest: Biggest) {
                 ) {
                     Text(
                         text = "Chuỗi trận hiện tại",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 20.sp,
+                            color = Color.White
+                        ),
                         fontWeight = FontWeight.Medium
                     )
 
@@ -635,7 +659,6 @@ private fun BiggestRecordsCard(biggest: Biggest) {
                     }
                 }
             }
-
             // Biggest Wins/Losses
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -644,7 +667,7 @@ private fun BiggestRecordsCard(biggest: Biggest) {
                 Card(
                     modifier = Modifier.weight(1f),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF4CAF50).copy(alpha = 0.1f)
+                        containerColor = PremierPurpleLight
                     )
                 ) {
                     Column(
@@ -659,17 +682,26 @@ private fun BiggestRecordsCard(biggest: Biggest) {
 
                         Text(
                             text = "Thắng đậm nhất:",
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 14.sp,
+                                color = Color.White
+                            ),
                             textAlign = TextAlign.Center
                         )
 
                         Text(
                             text = "H: ${biggest.wins.home}",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
                         )
                         Text(
                             text = "A: ${biggest.wins.away}",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
                         )
                     }
                 }
@@ -685,24 +717,33 @@ private fun BiggestRecordsCard(biggest: Biggest) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = Icons.Default.TrendingDown,
+                            imageVector = Icons.AutoMirrored.Filled.TrendingDown,
                             contentDescription = null,
                             tint = Color(0xFFF44336)
                         )
 
                         Text(
                             text = "Thua đậm ",
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 14.sp,
+                                color = Color.White
+                            ),
                             textAlign = TextAlign.Center
                         )
 
                         Text(
                             text = "H: ${biggest.loses.home}",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
                         )
                         Text(
                             text = "A: ${biggest.loses.away}",
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 12.sp,
+                                color = Color.White
+                            )
                         )
                     }
                 }
@@ -722,13 +763,18 @@ private fun StreakItem(
     ) {
         Text(
             text = "$value",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 24.sp,
+            ),
             fontWeight = FontWeight.Bold,
             color = color
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 14.sp,
+                color = Color.White
+            )
         )
     }
 }
@@ -736,7 +782,7 @@ private fun StreakItem(
 @Composable
 private fun FormationsCard(lineups: List<Lineup>) {
     StatisticsCard(
-        title = "Formations Used",
+        title = "Đội hình đã sử dụng",
         icon = Icons.Default.FormatListNumbered
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -772,20 +818,20 @@ private fun FormationItem(
             )
 
             Text(
-                text = "$played games",
+                text = "$played trận",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White
             )
         }
 
         LinearProgressIndicator(
-            progress = progress,
+            progress = { progress },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(6.dp)
                 .clip(RoundedCornerShape(3.dp)),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            trackColor = MaterialTheme.colorScheme.primary,
         )
     }
 }
@@ -800,9 +846,9 @@ private fun StatisticsCard(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = PremierPurpleDark
         )
     ) {
         Column(
@@ -817,15 +863,16 @@ private fun StatisticsCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = Color.White,
                     modifier = Modifier.size(24.dp)
                 )
 
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = Color.White
+                    ),
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 

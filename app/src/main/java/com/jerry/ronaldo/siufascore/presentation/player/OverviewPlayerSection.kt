@@ -305,7 +305,7 @@ fun TimelineItemCard(
             // Season Header
             Text(
                 text = "Mùa giải ${item.season}",
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -335,7 +335,9 @@ fun TeamsSection(
     Column(modifier = modifier) {
         Text(
             text = "Câu lạc bộ",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = MaterialTheme.typography.titleMedium.fontSize
+            ),
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -393,7 +395,9 @@ fun TrophiesSection(
     Column(modifier = modifier) {
         Text(
             text = "Danh hiệu (${trophies.size})",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = MaterialTheme.typography.titleMedium.fontSize
+            ),
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface
         )

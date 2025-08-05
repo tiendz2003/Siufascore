@@ -4,10 +4,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.jerry.ronaldo.siufascore.presentation.matches.DetailMatchViewModel
 import com.jerry.ronaldo.siufascore.presentation.matches.screen.detail.DetailMatchScreen
+import com.jerry.ronaldo.siufascore.utils.NavigationTransitionResolver
+import com.jerry.ronaldo.siufascore.utils.animComposable
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -18,12 +18,13 @@ fun NavController.navigateToDetailMatch(navOptions: NavOptions? = null, matchId:
 }
 
 fun NavGraphBuilder.detailMatchScreen(
+    transitionResolver: NavigationTransitionResolver,
     onBackClick: () -> Unit,
     onMatchClick: (Int) -> Unit,
     onTeamClick: (Int) -> Unit
 ) {
-    composable<DetailMatchRoute> { entry ->
-        val matchId = entry.toRoute<DetailMatchRoute>().matchId
+    animComposable<DetailMatchRoute>(transitionResolver) { route ->
+        val matchId = route.matchId
         //Màn hình detailMatch
         DetailMatchScreen(
             onBackClick = onBackClick,
